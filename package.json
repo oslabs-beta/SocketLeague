@@ -27,6 +27,7 @@
     "babel-loader": "^8.2.3",
     "concurrently": "^6.5.1",
     "cross-env": "^7.0.3",
+    "dotenv": "^10.0.0",
     "html-webpack-plugin": "^5.5.0",
     "jest": "^27.4.5",
     "nodemon": "^2.0.15",
