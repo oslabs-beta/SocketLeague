@@ -12,17 +12,48 @@ class Connection {
     this.socket = new WebSocket(url);
     this.subscribe = this.subscribe.bind(this);
     this.unsubscribe = this.unsubscribe.bind(this);
-    this.publish = this.publish.bind(this);
+    this.sendUpdate = this.sendUpdate.bind(this);
+    this._publish = this._publish.bind(this);
+
+    this.subscriptions = new Map();
+    this.socket.on("message", message => {
+      const session = '0';
+      const callback = this.subscriptions.get(session);
+      if (!callback) {
+        console.log(`[SL] Warning: no handler registered for session ${session}. Ignoring message.`);
+        return;
+      }
+      callback(message);
+    });
   }
-  subscribe(onMessage) {
-    // TODO: unpack state based on the message protocol we come up with
-    this.socket.on("message", onMessage);
+  
+  subscribe(onMessage, initialState) {
+    const session = '0';
+    if (this.subscriptions.has(session)) {
+      console.log(`[SL] Warning: a subscription already exists for session ${session}. Overriding the old message handler.`);
+    }
+    this.subscriptions.set(session, onMessage);
+    const action = types.INITIAL;
+    const state = initialState;
+    this._publish({ action, state, session });
   }  
+
   unsubscribe() {
-    // TODO: remove event handler
+    if (!this.subscriptions.has(session)) {
+      console.log(`[SL] Warning: no subscription exists for session ${session}. Doing nothing.`);
+      return;
+    }
+    this.subscriptions.delete(session);
   }
-  publish(message) {
-    // TODO: pack state based on the message protocol we come up with
+
+  sendUpdate(newState) {
+    const action = types.UPDATE;
+    const state = newState;
+    const session = '0';
+    conn._publish({ action, state, session });
+  }
+
+  _publish(message) {
     this.socket.send(JSON.stringify(message));
   }
 };
@@ -30,21 +61,17 @@ class Connection {
 export const useSyncState = (initialState, conn) => {
   const [state, setState] = useState(initialState);
   const handleMessage = message => {
-    // TODO: unpack state based on the message protocol we come up with
-    setState(message);
+    setState(JSON.parse(message));
   };
 
   useEffect(() => {
-    conn.subscribe(handleMessage);
+    conn.subscribe(handleMessage, initialState);
     return conn.unsubscribe;
   }, []);
 
   const setSyncState = newState => {
     setState(newState);
-    const action = types.UPDATE;
-    const state = newState;
-    const session = 0;
-    conn.publish({ action, state, session });
+    conn.sendUpdate(newState);
   };
   return [state, setSyncState];
 };
