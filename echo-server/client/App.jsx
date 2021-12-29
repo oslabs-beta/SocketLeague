@@ -1,4 +1,5 @@
 import React from "react";
+import { useSyncState, Connection } from "./hook";
 
 const socket = new WebSocket("ws://localhost:3000");
 
@@ -18,7 +19,6 @@ function sendWebSocketMessage() {
 
 
 function sendWebSocketUndoMessage(){}
-//
 
 
 socket.onmessage = function (event) {
@@ -33,6 +33,7 @@ socket.onmessage = function (event) {
       //convert reader.result from a string to an object
       const readState = JSON.parse(reader.result);
       //we need to set this object as the state for the client
+      console.log(readState);
       document.getElementById('echoTextDisplay').value = readState;
     };
 
@@ -42,15 +43,18 @@ socket.onmessage = function (event) {
   }
 };
 
+const conn = new Connection('ws://localhost:3000');
+
 const App = () => {
+  const [color, setColor] = useSyncState('red', conn);
   return (
-    <div>
+    <div style={{color: color}}>
       <h1>Narcissus's Mirror</h1>
       <textarea
         className="textDisplay"
         id="echoTextDisplay"
         placeholder=""
-      ></textarea>
+      >{color}</textarea>
       <input
         className="textInput"
         id="echoText"
@@ -59,6 +63,8 @@ const App = () => {
       ></input>
       <button onClick={sendWebSocketMessage}>Send</button>
       <button onClick={sendWebSocketUndoMessage}>Undo</button>
+      <button onClick={() => setColor('blue')}>Blue</button>
+      <span>{color}</span>
     </div>
   );
 };
