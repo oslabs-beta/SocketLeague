@@ -7,7 +7,7 @@ const types = {
   REDO: 'redo',
 };
 
-class Connection {
+export class Connection {
   constructor(url) {
     this.socket = new WebSocket(url);
     this.subscribe = this.subscribe.bind(this);
@@ -16,7 +16,7 @@ class Connection {
     this._publish = this._publish.bind(this);
 
     this.subscriptions = new Map();
-    this.socket.on("message", message => {
+    this.socket.addEventListener("message", message => {
       const session = '0';
       const callback = this.subscriptions.get(session);
       if (!callback) {
@@ -35,7 +35,10 @@ class Connection {
     this.subscriptions.set(session, onMessage);
     const action = types.INITIAL;
     const state = initialState;
-    this._publish({ action, state, session });
+    this.socket.onopen=()=>{
+      console.log('hit onopen event listener')
+      this._publish({ action, state, session });
+    }
   }  
 
   unsubscribe() {
@@ -50,10 +53,11 @@ class Connection {
     const action = types.UPDATE;
     const state = newState;
     const session = '0';
-    conn._publish({ action, state, session });
+    this._publish({ action, state, session });
   }
 
   _publish(message) {
+    console.log('hit publish hook')
     this.socket.send(JSON.stringify(message));
   }
 };
@@ -61,7 +65,23 @@ class Connection {
 export const useSyncState = (initialState, conn) => {
   const [state, setState] = useState(initialState);
   const handleMessage = message => {
-    setState(JSON.parse(message));
+    setState(JSON.parse(message.data));
+    /*
+    const reader = new FileReader();
+
+    //reader.onload is invoked as a result of readAsText
+    reader.onload = () => {
+      //convert reader.result from a string to an object
+      console.log(`raw result: ${reader.result}`);
+      const readState = JSON.parse(reader.result);
+      //we need to set this object as the state for the client
+      console.log(`parsed result: ${readState}`);
+      setState(readState);
+    };
+
+    console.log("Mesage type: ", message);
+    reader.readAsText(message.data);
+    */
   };
 
   useEffect(() => {
