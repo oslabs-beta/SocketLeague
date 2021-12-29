@@ -5,7 +5,7 @@ const ws = require('ws');
 const path = require("path");
 
 //temporary: directly database into the websocket server
-const db = require('../models/clientModel');
+const db = require('\./models/clientModel.js');
 
 const PORT = 3000;
 
@@ -58,12 +58,25 @@ function handleWsConnection(socket) {
   console.log('Somebody connected to the websocket server');
   //how can the message specify what we are trying to accomplish?
 
+  //On initial communication to the server:
+  //client starts either with a blank session ID or another session ID pre-provided somehow
+  //the server checks to see if this session ID already exists
+  //if it does, the server replies with the state for that session ID, connecting the client to that session
+  //if it does not, the server saves the received state.
+  //it then replies with the state and generates a new session Id it sends to the client (overwrites whatever session ID the client had before)
+
   //we need to customize how state is transmitted to handle different use cases
   //right now message comes in as a string
-  socket.on('message', message => { // "{action: undo || redo || update, state: state}"
+  socket.on('message', message => { // "{action: undo || update || initial, state: state, session ID}"
+
+
+    
+    //client sends object with 'action' property and 'state' property
+
+    //server sends 'state' and the 'session' only?
 
     //parse the message into a json object?
-    const stateChange = message.json(); //stateChange will be an object now
+    const stateChange = JSON.parse(message); //message.json(); //stateChange will be an object now
     //we have a tag on the message that specifies the behavior that the server takes
 
     //UNDO: send delete to the DB
@@ -76,14 +89,14 @@ function handleWsConnection(socket) {
         { "sort": { "_id": -1 } } //pray that this will delete the latest record for us with no issues
       )
         .catch((err) => {
-        console.log(err);
+          console.log('Error in undo', err);
       });
       //transmit the updated state here
       for (const client of clients) {
         //TODO: integrate mongoDB here
         const sessionRecords = db.find({session: '0'})
         .catch((err) => {
-          console.log(err);
+          console.log('undo', err);
         });
         client.send(sessionRecords[0].state);
       }
@@ -99,22 +112,39 @@ function handleWsConnection(socket) {
       console.log(`Got a message: ${message}`);
       //add new messages to the list of all messages
       //TODO: integrate mongoDB here
-      state.push(message);
+      state.push(stateChange.state);
+      console.log("state Change is ", stateChange);
+      console.log(state);
+      // const reader = new FileReader();
+
+      // //reader.onload is invoked as a result of readAsText
+      // reader.onload = () => {
+      //   console.log("Result: " + reader.result);
+      //   //convert reader.result from a string to an object
+      //   const readState = JSON.parse(reader.result);
+      //   //we need to set this object as the state for the client
+      // };
+      // reader.readAsText(event.data);
       //we need this to create a new entry, not update!
       db.create(
         {session: '0', state: state}
-      )    
-      .catch((err) => {
-        console.log(err);
-      });
+      ).then((data) => {console.log("the data is ", data)
       for (const client of clients) {
         //TODO: integrate mongoDB here
-        const sessionRecords = db.find({session: '0'})
+        db.find({session: '0'})
+        .then((sessionRecords)=>{
+          console.log (sessionRecords[sessionRecords.length-1],sessionRecords.length);
+          client.send(JSON.stringify(sessionRecords[sessionRecords.length-1].state)); //state is a list of messages [msg1, msg2, msg3]
+        })
         .catch((err) => {
-          console.log(err);
+          console.log('Error in finding session', err);
         });
-        client.send(JSON.stringify(sessionRecords[0].state)); //state is a list of messages [msg1, msg2, msg3]
       }
+    }
+      )    
+      .catch((err) => {
+        console.log('Error in update', err);
+      });
     }
   });
 }

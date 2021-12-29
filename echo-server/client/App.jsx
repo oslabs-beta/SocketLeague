@@ -9,10 +9,18 @@ socket.onerror = function (error) {
 };
 
 function sendWebSocketMessage() {
-  socket.send(message);
+  console.log("We are in the send websocket message function");
+  const msgObject = {};
+  msgObject.state = message;
+  msgObject.action = 'update';
+  socket.send(JSON.stringify(msgObject));
 }
+
+
 function sendWebSocketUndoMessage(){}
 //
+
+
 socket.onmessage = function (event) {
   console.log(`[message] Data received from server: ${event.data}`);
   //console.log(`[message] Data received from server: ${JSON.parse(event.data)}`);

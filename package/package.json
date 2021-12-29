@@ -1,0 +1,34 @@
+{
+  "name": "Socket League",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "contributors": [
+    {
+      "name": "Aaron Gaut",
+      "url": "https://github.com/AaronJGaut"
+    },
+    {
+      "name": "Kurt Crandall",
+      "url": "https://github.com/KCrandall6"
+    },
+    {
+      "name": "Kyle Boudewyn",
+      "url": "https://github.com/KyleBoudewyn"
+    },
+    {
+      "name": "Trevor Mow",
+      "url": "https://github.com/tmow12"
+    },
+    {
+      "name": "Zachary Lim",
+      "url": "https://github.com/Lzzhengyi"
+    }
+  ]
+}
