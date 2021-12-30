@@ -12,7 +12,7 @@ socket.onerror = function (error) {
 };
 
 function sendWebSocketMessage() {
-  console.log("We are in the send websocket message function");
+  console.log("We are in the send update websocket message function");
   const msgObject = {};
   msgObject.state = message;
   msgObject.action = 'update';
@@ -21,7 +21,14 @@ function sendWebSocketMessage() {
 }
 
 
-function sendWebSocketUndoMessage(){}
+function sendWebSocketUndoMessage(){
+  console.log("We are in the send undo websocket message function");
+  const msgObject = {};
+  msgObject.state = message;
+  msgObject.action = 'undo';
+  msgObject.session = '0';
+  socket.send(JSON.stringify(msgObject));
+}
 
 
 socket.onmessage = function (event) {
