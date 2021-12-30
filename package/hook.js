@@ -1,13 +1,9 @@
-import React, { useState, useEffect } from 'react';
-
 const types = {
   UPDATE: 'update',
   INITIAL: 'initial',
   UNDO: 'undo',
   REDO: 'redo',
 };
-
-export const HookReact = React;
 
 export class Connection {
   constructor(url) {
@@ -64,8 +60,8 @@ export class Connection {
   }
 };
 
-export const useSyncState = (initialState, conn) => {
-  const [state, setState] = useState(initialState);
+export const useSyncState = (initialState, conn, react) => {
+  const [state, setState] = react.useState(initialState);
   const handleMessage = message => {
     setState(JSON.parse(message.data));
     /*
@@ -86,7 +82,7 @@ export const useSyncState = (initialState, conn) => {
     */
   };
 
-  useEffect(() => {
+  react.useEffect(() => {
     conn.subscribe(handleMessage, initialState);
     return conn.unsubscribe;
   }, []);

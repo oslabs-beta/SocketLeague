@@ -1,5 +1,5 @@
 import React from "react";
-import { useSyncState, Connection } from "./hook";
+import { useSyncState, Connection } from "socket-league";
 
 //console.log(`Using same react instance? ${React === HookReact}`);
 
@@ -50,7 +50,7 @@ const conn = new Connection('ws://localhost:3000');
 
 const App = () => {
   console.log('attempting to render app');
-  const [color, setColor] = useSyncState('red', conn);
+  const [color, setColor] = useSyncState('red', conn, React);
   return (
     <div style={{color: color}}>
       <h1>Narcissus's Mirror</h1>
