@@ -16,6 +16,7 @@ function sendWebSocketMessage() {
   const msgObject = {};
   msgObject.state = message;
   msgObject.action = 'update';
+  msgObject.session = '0';
   socket.send(JSON.stringify(msgObject));
 }
 
