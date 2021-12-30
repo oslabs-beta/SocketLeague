@@ -2,10 +2,6 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 require('dotenv').config();
 
-
-// const MONGO_URI = 
-//   '***REMOVED***';
-
 mongoose
   .connect(process.env.DB_URI, {
     useNewUrlParser: true,
