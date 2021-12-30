@@ -1,6 +1,8 @@
 import React from "react";
 import { useSyncState, Connection } from "./hook";
 
+//console.log(`Using same react instance? ${React === HookReact}`);
+
 const socket = new WebSocket("ws://localhost:3000");
 
 let message = "hello, I clicked a button!";
@@ -46,6 +48,7 @@ socket.onmessage = function (event) {
 const conn = new Connection('ws://localhost:3000');
 
 const App = () => {
+  console.log('attempting to render app');
   const [color, setColor] = useSyncState('red', conn);
   return (
     <div style={{color: color}}>
