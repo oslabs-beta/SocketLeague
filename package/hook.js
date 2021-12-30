@@ -12,6 +12,7 @@ export class Connection {
     this.unsubscribe = this.unsubscribe.bind(this);
     this.sendUpdate = this.sendUpdate.bind(this);
     this._publish = this._publish.bind(this);
+    this.pendingMessageData = [];
 
     this.subscriptions = new Map();
     this.socket.addEventListener("message", message => {
@@ -21,8 +22,16 @@ export class Connection {
         console.log(`[SL] Warning: no handler registered for session ${session}. Ignoring message.`);
         return;
       }
-      callback(message);
+      const parsedMessage = JSON.parse(message.data);
+      callback(parsedMessage);
     });
+
+    this.socket.onopen = () => {
+      for (const data of this.pendingMessageData) {
+        this.socket.send(data);
+      }
+      this.pendingMessageData = [];
+    };
   }
   
   subscribe(onMessage, initialState) {
@@ -33,10 +42,7 @@ export class Connection {
     this.subscriptions.set(session, onMessage);
     const action = types.INITIAL;
     const state = initialState;
-    this.socket.onopen=()=>{
-      console.log('hit onopen event listener')
-      this._publish({ action, state, session });
-    }
+    this._publish({ action, state, session });
   }  
 
   unsubscribe() {
@@ -56,14 +62,21 @@ export class Connection {
 
   _publish(message) {
     console.log('hit publish hook')
-    this.socket.send(JSON.stringify(message));
+    const data = JSON.stringify(message);
+    if (this.socket.readyState === WebSocket.OPEN) {
+      this.socket.send(data);
+    }
+    else {
+      this.pendingMessageData.push(data);
+    }
   }
 };
+
 
 export const useSyncState = (initialState, conn, react) => {
   const [state, setState] = react.useState(initialState);
   const handleMessage = message => {
-    setState(JSON.parse(message.data));
+    setState(message);
     /*
     const reader = new FileReader();
 
