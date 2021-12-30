@@ -31,7 +31,7 @@
       "url": "https://github.com/Lzzhengyi"
     }
   ],
-  "devDependencies": {
+  "peerDependencies": {
     "react": "^17.0.2"
   }
 }
