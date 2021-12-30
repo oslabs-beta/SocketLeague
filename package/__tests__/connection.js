@@ -1,9 +1,10 @@
 import { useSyncState, Connection } from '../hook';
 import { WS } from 'jest-websocket-mock';
+import jest from 'jest-mock';
 
-const WS_URI = "ws://localhost:3000";
+const WS_URI = 'ws://localhost:3000';
 
-describe("Connection", () => {
+describe('Connection', () => {
   let server;
 
   beforeEach(() => {
@@ -14,12 +15,12 @@ describe("Connection", () => {
     WS.clean();
   });
 
-  it("Connects to the server", async () => {
-    const conn = new Connection(WS_URI);
+  it('Connects to the server', async () => {
+    new Connection(WS_URI);
     await server.connected;
   });
 
-  it("Sends an update to the server", async () => {
+  it('Sends an update to the server', async () => {
     const conn = new Connection(WS_URI);
     await server.connected;
     conn.sendUpdate('hello');
@@ -30,8 +31,7 @@ describe("Connection", () => {
     });
   });
 
-  // currently broken
-  xit("Subscribes to the server", async () => {
+  it('Subscribes to the server', async () => {
     const conn = new Connection(WS_URI);
     await server.connected;
     conn.subscribe(() => {}, 'hello');
@@ -42,13 +42,13 @@ describe("Connection", () => {
     });
   });
 
-  it("Gets updates from the server", async () => {
+  it('Gets updates from the server', async () => {
     const conn = new Connection(WS_URI);
     await server.connected;
     let handlerResolve;
     const handler = new Promise(resolve => { handlerResolve = resolve });
-    conn.subscribe(message => handlerResolve(JSON.parse(message.data)), 'hello');
-    await server.send("hello");
+    conn.subscribe(message => handlerResolve(message), 'hello');
+    await server.send('hello');
     return handler.then(message => expect(message).toEqual('hello'));
   });
 });
@@ -57,12 +57,14 @@ describe('useSyncState', () => {
   let server;
   let conn;
   let react;
+  let setLocalState;
 
   beforeEach(() => {
     server = new WS(WS_URI, { jsonProtocol: true });
     conn = new Connection(WS_URI);
+    setLocalState = jest.fn();
     react = {
-      useState: (newState) => [newState, () => {}],
+      useState: (newState) => [newState, setLocalState],
       useEffect: (effect, deps) => { effect(); },
     };
   });
@@ -82,6 +84,11 @@ describe('useSyncState', () => {
 
   it('Sends updated state to the server', async () => {
     const [state, setState] = useSyncState('hello', conn, react);
+    await expect(server).toReceiveMessage({
+      action: 'initial',
+      state: 'hello',
+      session: '0',
+    });
     setState('bye');
     await expect(server).toReceiveMessage({
       action: 'update',
@@ -89,4 +96,11 @@ describe('useSyncState', () => {
       session: '0',
     });
   })
+
+  it('Invokes setState upon update from server', async () => {
+    const [state, setState] = useSyncState('hello', conn, react);
+    await server.connected;
+    server.send('bye');
+    expect(setLocalState).toBeCalledWith('bye');
+  });
 });
