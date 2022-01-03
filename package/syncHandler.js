@@ -1,6 +1,9 @@
 //temporary: directly database into the websocket server
-const db = require("./models/clientModel.js");
-const mongoose = require("mongoose");
+// const db = require("./models/clientModel.js");
+import db from "./models/clientModel.js";
+import mongoose from 'mongoose';
+
+
 //eventually we need to export stuff
 
 //do all the database calls in here
@@ -15,7 +18,8 @@ const types = {
 };
 
 //the schema has to be specified in here too, then
-module.exports = class SyncHandler {
+// module.exports = class SyncHandler {
+  export default class SyncHandler {
   //method to ask user for URI or have it initialized when the object is created
   constructor(uri) {
     this.clients = [];
@@ -36,10 +40,7 @@ module.exports = class SyncHandler {
     const stateChange = JSON.parse(message); //message.json(); //stateChange will be an object now
 
     //stateChange has: session ID, state object with properties corresponding to parts of the state, and an action
-    //handle websocket connection events (initial, undo, update)
-
-
-  
+    //handle websocket connection events (initial, undo, update)  
     /*  INITIAL:
           This is for initial connection to an existing session or to a new session.
           If the stateChange action is 'initial', first check for an existing session ID associated with the message. 
@@ -148,6 +149,12 @@ module.exports = class SyncHandler {
   }
   addSocket(socket) {
     this.clients.push(socket);
+  }
+  clearState (){
+    db.collection.drop();
+  }
+  __getDB(){
+    return db;
   }
 }
 
