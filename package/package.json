@@ -33,9 +33,14 @@
     }
   ],
   "devDependencies": {
+    "dotenv": "^10.0.0",
     "jest": "^27.4.5",
     "jest-websocket-mock": "^2.2.1",
     "mock-socket": "^9.0.8",
+    "mongoose": "^6.1.4",
     "react": "^17.0.2"
+  },
+  "dependencies": {
+    "ws": "^8.4.0"
   }
 }
