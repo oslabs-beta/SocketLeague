@@ -53,7 +53,8 @@ module.exports = class SyncHandler {
     if (stateChange.action === "initial") {
       console.log(`Got an initial message: ${message}`);
       db.find({ session: stateChange.session }).then((data) => {
-        if (data) {
+        if (data.length > 0) {
+          console.log(data)
           for (const client of this.clients) {
             client.send(JSON.stringify(data[data.length - 1].state));
           }
@@ -148,6 +149,12 @@ module.exports = class SyncHandler {
   }
   addSocket(socket) {
     this.clients.push(socket);
+  }
+  clearState (){
+    db.collection.drop();
+  }
+  __getDB(){
+    return db;
   }
 }
 

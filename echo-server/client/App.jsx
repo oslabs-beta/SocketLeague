@@ -72,9 +72,13 @@ const App = () => {
         placeholder="what would you have me say?"
         onChange={(e) => (message = e.target.value)}
       ></input>
+      <div></div>
       <button onClick={sendWebSocketMessage}>Send</button>
+      <div></div>
       <button onClick={sendWebSocketUndoMessage}>Undo</button>
+      <div></div>
       <button onClick={() => setColor('blue')}>Blue</button>
+      <div></div>
       <span>{color}</span>
     </div>
   );
