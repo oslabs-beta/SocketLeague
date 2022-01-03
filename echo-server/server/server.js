@@ -3,12 +3,12 @@ const cookieParser = require("cookie-parser");
 const app = express();
 const ws = require("ws");
 const path = require("path");
-// const SyncHandler = require('./syncHandler.js');
-const sl = require("socket-league");
+const SyncHandler = require('./syncHandler.js');
+// const sl = require("socket-league");
 
-// console.log('Imported: ',syncHandler);
 //initialize syncState with the URI of the database where the state is stored (ZL 12.29)
-const syncState = new sl.SyncHandler(process.env.DB_URI); //this is definitely wrong, 
+// const syncState = new sl.SyncHandler(process.env.DB_URI);
+const syncState = new SyncHandler(process.env.DB_URI);
 
 //temporary: directly database into the websocket server
 const db = require("./models/clientModel.js");
