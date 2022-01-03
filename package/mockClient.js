@@ -37,7 +37,7 @@ class MockClient {
     else {
       let resolver;
       const messagePromise = new Promise((resolve, reject) => resolver = resolve);
-      this._pendingResolvers = resolver;
+      this._pendingResolvers.push(resolver);
       return messagePromise;
     }
   }
@@ -47,7 +47,7 @@ class MockClient {
   }
 }
 
-const WAIT_DELAY = 1000;
+const WAIT_DELAY = 5000;
 const TIMEOUT = Symbol("timoeut");
 
 const makeInvalidClientMessage = function makeInvalidClientMessage(client, matcher) {
@@ -66,7 +66,14 @@ expect.extend({
       };
     }
 
-    const messageOrTimeout = await Promise.race([client.nextMessage, new Promise(resolve => setTimeout(() => resolve(TIMEOUT), WAIT_DELAY))]);
+    let timeoutId;
+    const messageOrTimeout = await Promise.race([
+      client.nextMessage,
+      new Promise(resolve => {
+        timeoutId = setTimeout(() => resolve(TIMEOUT), WAIT_DELAY)
+      }),
+    ]);
+    clearTimeout(timeoutId);
 
     if (messageOrTimeout === TIMEOUT) {
       return {
