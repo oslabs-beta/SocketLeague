@@ -95,7 +95,7 @@ describe("WebSocket Server", () => {
     expect(sessionRecords).toHaveLength(1);
   });
 
-  it("Server can revert to the previous state stored in the database for a given session (upon receiving the undo call).", async () => {
+  it("Server reverts to the previous state stored in the database for a given session (upon receiving the undo call).", async () => {
     const client = new MockClient(WS_URI);
     await client.connected;
 
