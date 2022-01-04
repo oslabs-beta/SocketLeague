@@ -57,7 +57,7 @@ const conn = new Connection('ws://localhost:3000');
 
 const App = () => {
   console.log('attempting to render app');
-  const [color, setColor] = useSyncState('red', conn, React);
+  const [color, setColor, undoColor] = useSyncState('red', conn, React);
   return (
     <div style={{color: color}}>
       <h1>Narcissus's Mirror</h1>
@@ -75,6 +75,7 @@ const App = () => {
       <button onClick={sendWebSocketMessage}>Send</button>
       <button onClick={sendWebSocketUndoMessage}>Undo</button>
       <button onClick={() => setColor('blue')}>Blue</button>
+      <button onClick={() => undoColor()}>Undo color</button>
       <span>{color}</span>
     </div>
   );
