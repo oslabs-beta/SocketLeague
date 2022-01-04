@@ -3,12 +3,14 @@ const Schema = mongoose.Schema;
 import dotenv from "dotenv";
 dotenv.config();
 
+
+
 mongoose
   .connect(process.env.DB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
-  .then(() => console.log('Connected to MongoDB'))
+  .then(() => console.log('Connected to MongoDB', DB_URI))
   .catch((err) => console.log(err))
 
 

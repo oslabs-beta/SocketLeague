@@ -7,6 +7,7 @@ const socket = new WebSocket("ws://localhost:3000");
 
 let message = "hello, I clicked a button!";
 
+
 socket.onerror = function (error) {
   alert(`[error] ${error.message}`);
 };
@@ -14,7 +15,8 @@ socket.onerror = function (error) {
 function sendWebSocketMessage() {
   console.log("We are in the send update websocket message function");
   const msgObject = {};
-  msgObject.state = message;
+  msgObject.state = []; //message.push(); 
+  msgObject.state.push(message);
   msgObject.action = 'update';
   msgObject.session = '0';
   socket.send(JSON.stringify(msgObject));
@@ -44,7 +46,7 @@ socket.onmessage = function (event) {
       const readState = JSON.parse(reader.result);
       //we need to set this object as the state for the client
       console.log(readState);
-      document.getElementById('echoTextDisplay').value = readState;
+      //document.getElementById('echoTextDisplay').value = readState;
     };
 
     reader.readAsText(event.data);
@@ -57,29 +59,31 @@ const conn = new Connection('ws://localhost:3000');
 
 const App = () => {
   console.log('attempting to render app');
-  const [color, setColor] = useSyncState('red', conn, React);
+  // const [color, setColor] = useSyncState('red', conn, React);
+  const sessionIdRoom1 = 0;
+  const sessionIdRoom2 = 1;
+  const [socketState, setSocketState] = useSyncState('No messages have been typed...', conn, React);
   return (
-    <div style={{color: color}}>
-      <h1>Narcissus's Mirror</h1>
+    <div>
+      <h1>Socket League Demo (Anonymous Chat Room)</h1>
+      <button onClick={() => setSocketState(sessionIdRoom1)}>Chat Room 1</button>
+      <button onClick={() => setSocketState(sessionIdRoom2)}>Chat Room 2</button>
+      <br></br>
       <textarea
+        style={{width:'300px', height:'300px'}}
         className="textDisplay"
         id="echoTextDisplay"
-        placeholder=""
-      >{color}</textarea>
+      >{socketState}</textarea>
+      <br></br>
       <input
         className="textInput"
         id="echoText"
         placeholder="what would you have me say?"
         onChange={(e) => (message = e.target.value)}
       ></input>
-      <div></div>
       <button onClick={sendWebSocketMessage}>Send</button>
-      <div></div>
       <button onClick={sendWebSocketUndoMessage}>Undo</button>
-      <div></div>
-      <button onClick={() => setColor('blue')}>Blue</button>
-      <div></div>
-      <span>{color}</span>
+      <span>{socketState}</span>
     </div>
   );
 };
