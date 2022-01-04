@@ -111,5 +111,83 @@ describe("WebSocket Server", () => {
     });
     await expect(client).toReceiveClientMessage('this is a test message');
   });
+
+  it("Server reverts to correct state after three updates, two undos, two updates, and two undos.", async () => {
+    const client = new MockClient(WS_URI);
+    await client.connected;
+
+    // first update [history: 1]
+    client.send({
+      state: 'first update',
+      action: 'update',
+      session: '0',
+    });
+    await expect(client).toReceiveClientMessage('first update');
+
+    // The undo seems to fail unpredictably, so we are repeating the 
+    // following messages multiple times to ensure that the test will
+    // fail
+    for (let i = 0; i < 10; i++) {
+      // second update [history: 1 > 2]
+      client.send({
+        state: 'second update',
+        action: 'update',
+        session: '0',
+      });
+      await expect(client).toReceiveClientMessage('second update');
+
+       // third update [history: 1 > 2 > 3]
+       client.send({
+        state: 'third update',
+        action: 'update',
+        session: '0',
+      });
+      await expect(client).toReceiveClientMessage('third update');
+
+      // first undo [history: 1 > 2]
+      client.send({
+        action: 'undo',
+        session: '0',
+      });
+      await expect(client).toReceiveClientMessage('second update');
+
+      // second undo [history: 1]
+      client.send({
+        action: 'undo',
+        session: '0',
+      });
+      await expect(client).toReceiveClientMessage('first update');
+
+      // fourth update [history: 1 > 4]
+      client.send({
+        state: 'fourth update',
+        action: 'update',
+        session: '0',
+      });
+      await expect(client).toReceiveClientMessage('fourth update');
+
+      // fifth update [history: 1 > 4 > 5]
+      client.send({
+        state: 'fifth update',
+        action: 'update',
+        session: '0',
+      });
+      await expect(client).toReceiveClientMessage('fifth update');
+
+      // third undo [history: 1 > 4]
+      client.send({
+        action: 'undo',
+        session: '0',
+      });
+      await expect(client).toReceiveClientMessage('fourth update');
+
+      // fourth undo [history: 1]
+      client.send({
+        action: 'undo',
+        session: '0',
+      });
+      await expect(client).toReceiveClientMessage('first update');
+    }
+  });
 });
 
