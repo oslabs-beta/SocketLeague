@@ -13,7 +13,9 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [12.x, 14.x, 16.x]
+        node-version: [16.x]
+
+    environment: testing
 
     steps:
     - uses: actions/checkout@v2
@@ -22,7 +24,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-    - run: '(cd client-package && npm ci)'
     - run: '(cd server-package && npm ci)'
-    - run: '(cd client-package && npm test)'
     - run: '(cd server-package && npm test)'
+    - run: '(cd client-package && npm ci)'
+    - run: '(cd client-package && npm test)'
