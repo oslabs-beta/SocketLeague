@@ -55,6 +55,8 @@ module.exports = class SyncHandler {
       db.find({ session: stateChange.session }).then((data) => {
         if (data) {
           for (const client of this.clients) {
+            console.log(data);
+            console.log(data[data.length - 1].state);
             client.send(JSON.stringify(data[data.length - 1].state));
           }
         } else {
@@ -83,28 +85,36 @@ module.exports = class SyncHandler {
       //add new messages to the list of all messages
       console.log("state Change is ", stateChange);
 
-      //we need this to create a new entry, not update!
-      db.create({ session: stateChange.session, state: stateChange.state })
-        .then((data) => { 
-          //redundant because we have the record we just added but search the database for the latest record anyway
-          //logic for sending updated state to clients needs refactoring 
-          for (const client of this.clients) {
-            db.find({ session: stateChange.session })
-              .then((sessionRecords) => {
-                client.send(
-                  JSON.stringify(
-                    sessionRecords[sessionRecords.length - 1].state
-                  )
-                );
-              })
-              .catch((err) => {
-                console.log("Error in finding session", err);
-              });
-          }
-        })
-        .catch((err) => {
-          console.log("Error in update", err);
-        });
+      db.find({ session: stateChange.session }).then((sessionRecords) => {
+        console.log('current state is', sessionRecords[sessionRecords.length - 1].state);
+        const currentState = sessionRecords[sessionRecords.length - 1].state;
+        console.log('stateChange.state is', stateChange.state);
+        const newState = currentState.concat(stateChange.state);
+        console.log('current state and state change concated, ', newState);
+        //we need this to create a new entry, not update!
+        db.create({ session: stateChange.session, state: currentState })
+          .then((data) => { 
+            //redundant because we have the record we just added but search the database for the latest record anyway
+            //logic for sending updated state to clients needs refactoring 
+            for (const client of this.clients) {
+              db.find({ session: stateChange.session })
+                .then((sessionRecords) => {
+                  client.send(
+                    JSON.stringify(
+                      sessionRecords[sessionRecords.length - 1].state
+                    )
+                  );
+                })
+                .catch((err) => {
+                  console.log("Error in finding session", err);
+                });
+            }
+          })
+          .catch((err) => {
+            console.log("Error in update", err);
+          });
+      });
+
     }
 
     /*  UNDO:

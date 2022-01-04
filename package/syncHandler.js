@@ -1,6 +1,6 @@
 //temporary: directly database into the websocket server
 // const db = require("./models/clientModel.js");
-import db from "./models/clientModel.js";
+// import db from "./models/clientModel.js";
 import mongoose from 'mongoose';
 
 
