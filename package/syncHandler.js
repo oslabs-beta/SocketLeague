@@ -23,13 +23,15 @@ const types = {
   //method to ask user for URI or have it initialized when the object is created
   constructor(uri) {
     this.clients = [];
-    mongoose
-      .connect(uri, {
+    this.dbUri = uri;
+  }
+
+  async connect() {
+    await mongoose
+      .connect(this.dbUri, {
         useNewUrlParser: true,
         useUnifiedTopology: true,
-      })
-      .then(() => console.log("SyncHandler connected to MongoDB"))
-      .catch((err) => console.log(err));
+      });
   }
   
   // "{action: undo || update || initial, state: state, session ID}"
@@ -54,7 +56,7 @@ const types = {
     if (stateChange.action === "initial") {
       console.log(`Got an initial message: ${message}`);
       db.find({ session: stateChange.session }).then((data) => {
-        if (data) {
+        if (data.length) {
           for (const client of this.clients) {
             client.send(JSON.stringify(data[data.length - 1].state));
           }
@@ -150,8 +152,8 @@ const types = {
   addSocket(socket) {
     this.clients.push(socket);
   }
-  clearState (){
-    db.collection.drop();
+  async clearState (){
+    await db.collection.drop();
   }
   __getDB(){
     return db;

@@ -51,6 +51,16 @@ describe('Connection', () => {
     await server.send('hello');
     return handler.then(message => expect(message).toEqual('hello'));
   });
+
+  it('Sends an undo message', async() => {
+    const conn = new Connection(WS_URI);
+    await server.connected;
+    conn.sendUndo();
+    await expect(server).toReceiveMessage({
+      action: 'undo',
+      session: '0',
+    });
+  });
 });
 
 describe('useSyncState', () => {
@@ -84,11 +94,8 @@ describe('useSyncState', () => {
 
   it('Sends updated state to the server', async () => {
     const [state, setState] = useSyncState('hello', conn, react);
-    await expect(server).toReceiveMessage({
-      action: 'initial',
-      state: 'hello',
-      session: '0',
-    });
+    // Skipping initial message
+    await server.nextMessage;
     setState('bye');
     await expect(server).toReceiveMessage({
       action: 'update',
@@ -102,5 +109,16 @@ describe('useSyncState', () => {
     await server.connected;
     server.send('bye');
     expect(setLocalState).toBeCalledWith('bye');
+  });
+
+  it('Sends an undo message', async () => {
+    const [state, setState, undo] = useSyncState('hello', conn, react);
+    // Skipping initial message
+    await server.nextMessage;
+    undo();
+    await expect(server).toReceiveMessage({
+      action: 'undo',
+      session: '0',
+    });
   });
 });

@@ -8,10 +8,13 @@ const types = {
 export class Connection {
   constructor(url) {
     this.socket = new WebSocket(url);
+
     this.subscribe = this.subscribe.bind(this);
     this.unsubscribe = this.unsubscribe.bind(this);
     this.sendUpdate = this.sendUpdate.bind(this);
+    this.sendUndo = this.sendUndo.bind(this);
     this._publish = this._publish.bind(this);
+
     this.pendingMessageData = [];
 
     this.subscriptions = new Map();
@@ -53,6 +56,12 @@ export class Connection {
     this.subscriptions.delete(session);
   }
 
+  sendUndo() {
+    const action = types.UNDO;
+    const session = '0';
+    this._publish({ action, session });
+  }
+
   sendUpdate(newState) {
     const action = types.UPDATE;
     const state = newState;
@@ -61,7 +70,6 @@ export class Connection {
   }
 
   _publish(message) {
-    console.log('hit publish hook')
     const data = JSON.stringify(message);
     if (this.socket.readyState === WebSocket.OPEN) {
       this.socket.send(data);
@@ -104,5 +112,10 @@ export const useSyncState = (initialState, conn, react) => {
     setState(newState);
     conn.sendUpdate(newState);
   };
-  return [state, setSyncState];
+
+  const undo = () => {
+    conn.sendUndo();
+  };
+
+  return [state, setSyncState, undo];
 };

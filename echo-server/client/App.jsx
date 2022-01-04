@@ -59,10 +59,14 @@ const conn = new Connection('ws://localhost:3000');
 
 const App = () => {
   console.log('attempting to render app');
+<<<<<<< HEAD
   // const [color, setColor] = useSyncState('red', conn, React);
   const sessionIdRoom1 = 0;
   const sessionIdRoom2 = 1;
   const [socketState, setSocketState] = useSyncState('No messages have been typed...', conn, React);
+=======
+  const [color, setColor, undoColor] = useSyncState('red', conn, React);
+>>>>>>> dev
   return (
     <div>
       <h1>Socket League Demo (Anonymous Chat Room)</h1>
@@ -83,7 +87,13 @@ const App = () => {
       ></input>
       <button onClick={sendWebSocketMessage}>Send</button>
       <button onClick={sendWebSocketUndoMessage}>Undo</button>
+<<<<<<< HEAD
       <span>{socketState}</span>
+=======
+      <button onClick={() => setColor('blue')}>Blue</button>
+      <button onClick={() => undoColor()}>Undo color</button>
+      <span>{color}</span>
+>>>>>>> dev
     </div>
   );
 };
