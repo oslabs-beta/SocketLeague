@@ -1,22 +1,18 @@
 name: Node.js CI
 
 on:
-  push:
-    branches: [ main, dev ]
   pull_request:
     branches: [ main, dev ]
 
 jobs:
-  build:
-
+  test:
+    environment: testing
+    env:
+      DB_URI: ${{ secrets.DB_URI }}
     runs-on: ubuntu-latest
-
     strategy:
       matrix:
         node-version: [16.x]
-
-    environment: testing
-
     steps:
     - uses: actions/checkout@v2
     - name: Use Node.js ${{ matrix.node-version }}
