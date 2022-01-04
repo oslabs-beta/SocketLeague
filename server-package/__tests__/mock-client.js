@@ -1,5 +1,5 @@
-import MockClient from '../mockClient';
-import { WS } from 'jest-websocket-mock';
+const MockClient = require('../mockClient');
+const { WS } = require('jest-websocket-mock');
 
 const WS_URI = 'ws://localhost:3000';
 

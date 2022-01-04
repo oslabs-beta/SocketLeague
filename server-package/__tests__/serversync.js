@@ -1,12 +1,12 @@
-import dotenv from "dotenv";
+const dotenv = require("dotenv");
 
 dotenv.config();
 
-import { Server } from 'mock-socket';
-import mongoose from "mongoose";
+const { Server } = require('mock-socket');
+const mongoose = require("mongoose");
 
-import SyncHandler from "../syncHandler.js";
-import MockClient from "../mockClient";
+const SyncHandler = require("../syncHandler.js");
+const MockClient = require("../mockClient");
 
 const PORT = 3000;
 const WS_URI = `ws://localhost:${PORT}`;

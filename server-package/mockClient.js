@@ -1,4 +1,4 @@
-import { diff } from 'jest-diff';
+const { diff } = require('jest-diff');
 
 class MockClient {
   constructor(url) {
@@ -101,5 +101,4 @@ expect.extend({
   },
 });
 
-export default MockClient;
-export { MockClient };
+module.exports = MockClient;
