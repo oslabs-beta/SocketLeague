@@ -8,10 +8,10 @@ const mongoose = require("mongoose");
 
 //refactor by making it its own file
 const types = {
-  UPDATE: 'update',
-  INITIAL: 'initial',
-  UNDO: 'undo',
-  REDO: 'redo',
+  UPDATE: "update",
+  INITIAL: "initial",
+  UNDO: "undo",
+  REDO: "redo",
 };
 
 //the schema has to be specified in here too, then
@@ -19,6 +19,7 @@ module.exports = class SyncHandler {
   //method to ask user for URI or have it initialized when the object is created
   constructor(uri) {
     this.clients = [];
+    this.sessions = {};
     mongoose
       .connect(uri, {
         useNewUrlParser: true,
@@ -27,25 +28,22 @@ module.exports = class SyncHandler {
       .then(() => console.log("SyncHandler connected to MongoDB"))
       .catch((err) => console.log(err));
   }
-  
+
   // "{action: undo || update || initial, state: state, session ID}"
-    //client sends object with 'action' property and 'state' property
-    //server sends 'state' and the 'session' only?
-  handleState(message) {
+  //client sends object with 'action' property and 'state' property
+  //server sends 'state' and the 'session' only?
+  handleState(message, socket) {
     //parse the message into a json object?
     const stateChange = JSON.parse(message); //message.json(); //stateChange will be an object now
 
     //stateChange has: session ID, state object with properties corresponding to parts of the state, and an action
     //handle websocket connection events (initial, undo, update)
 
-
-  
     /*  INITIAL:
           This is for initial connection to an existing session or to a new session.
           If the stateChange action is 'initial', first check for an existing session ID associated with the message. 
           If it exists, the server connects the client to the existing state.
           If the session ID does not exist, a new one is created and a new database entry is also created.
-
           Future updates:
           - refactor for of loop to send to only certain clients
           - create a unique session ID
@@ -53,18 +51,24 @@ module.exports = class SyncHandler {
     if (stateChange.action === "initial") {
       console.log(`Got an initial message: ${message}`);
       db.find({ session: stateChange.session }).then((data) => {
-        if (data) {
-          for (const client of this.clients) {
-            console.log(data);
-            console.log(data[data.length - 1].state);
+        if (data.length > 0) {
+          if (this.sessions[stateChange.session]) {
+            this.sessions[stateChange.session].add(socket);
+          } else {
+            this.sessions[stateChange.session] = new Set();
+            this.sessions[stateChange.session].add(socket);
+          }
+          for (const client of this.sessions[stateChange.session]) {
             client.send(JSON.stringify(data[data.length - 1].state));
           }
         } else {
           //creating a new session with whatever state the client gives us
           //we assume the client knows how to handle whatever state we give back
-          db.create({ session: "0", state: stateChange.state })
+          db.create({ session: stateChange.session, state: stateChange.state })
             .then((data) => {
-              for (const client of this.clients) {
+              this.sessions[stateChange.session] = new Set();
+              this.sessions[stateChange.session].add(socket);
+              for (const client of this.sessions[stateChange.session]) {
                 client.send(JSON.stringify(data.state));
               }
             })
@@ -85,36 +89,28 @@ module.exports = class SyncHandler {
       //add new messages to the list of all messages
       console.log("state Change is ", stateChange);
 
-      db.find({ session: stateChange.session }).then((sessionRecords) => {
-        console.log('current state is', sessionRecords[sessionRecords.length - 1].state);
-        const currentState = sessionRecords[sessionRecords.length - 1].state;
-        console.log('stateChange.state is', stateChange.state);
-        const newState = currentState.concat(stateChange.state);
-        console.log('current state and state change concated, ', newState);
-        //we need this to create a new entry, not update!
-        db.create({ session: stateChange.session, state: currentState })
-          .then((data) => { 
-            //redundant because we have the record we just added but search the database for the latest record anyway
-            //logic for sending updated state to clients needs refactoring 
-            for (const client of this.clients) {
-              db.find({ session: stateChange.session })
-                .then((sessionRecords) => {
-                  client.send(
-                    JSON.stringify(
-                      sessionRecords[sessionRecords.length - 1].state
-                    )
-                  );
-                })
-                .catch((err) => {
-                  console.log("Error in finding session", err);
-                });
-            }
-          })
-          .catch((err) => {
-            console.log("Error in update", err);
-          });
-      });
-
+      //we need this to create a new entry, not update!
+      db.create({ session: stateChange.session, state: stateChange.state })
+        .then((data) => {
+          //redundant because we have the record we just added but search the database for the latest record anyway
+          //logic for sending updated state to clients needs refactoring
+          for (const client of this.sessions[stateChange.session]) {
+            db.find({ session: stateChange.session })
+              .then((sessionRecords) => {
+                client.send(
+                  JSON.stringify(
+                    sessionRecords[sessionRecords.length - 1].state
+                  )
+                );
+              })
+              .catch((err) => {
+                console.log("Error in finding session", err);
+              });
+          }
+        })
+        .catch((err) => {
+          console.log("Error in update", err);
+        });
     }
 
     /*  UNDO:
@@ -124,20 +120,17 @@ module.exports = class SyncHandler {
     */
     if (stateChange.action === "undo") {
       console.log(`Got an undo request: ${message}`);
-      db.findOneAndDelete(
-        { session: "0" },
-        { sort: { _id: -1 } }
-      ).catch((err) => {
-        console.log("Error in undo", err);
-      });
-      for (const client of this.clients) {
+      db.findOneAndDelete({ session: "0" }, { sort: { _id: -1 } }).catch(
+        (err) => {
+          console.log("Error in undo", err);
+        }
+      );
+      for (const client of this.sessions[stateChange.session]) {
         //TODO: error handle for if the array is empty later
         db.find({ session: stateChange.session })
           .then((sessionRecords) => {
             client.send(
-              JSON.stringify(
-                sessionRecords[sessionRecords.length - 1].state
-              )
+              JSON.stringify(sessionRecords[sessionRecords.length - 1].state)
             );
           })
           .catch((err) => {
@@ -145,7 +138,7 @@ module.exports = class SyncHandler {
           });
       }
     }
-    
+
     /*  REDO: **feature not yet functional**
         This is for 'redoing' an undo.
         If the stateChange action is 'redo', the recently deleted or undone state will be reverted. This reverted state will then
@@ -153,15 +146,16 @@ module.exports = class SyncHandler {
     */
     if (stateChange.action === "redo") {
     }
-
-
   }
   addSocket(socket) {
     this.clients.push(socket);
   }
-}
+  clearState() {
+    db.collection.drop();
+  }
+  __getDB() {
+    return db;
+  }
+};
 
 //
-
-
-
