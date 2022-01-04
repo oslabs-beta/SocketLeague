@@ -1,7 +1,7 @@
 //temporary: directly database into the websocket server
-// const db = require("./models/clientModel.js");
+const db = require("./models/clientModel.js");
 // import db from "./models/clientModel.js";
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 
 //eventually we need to export stuff
@@ -18,8 +18,7 @@ const types = {
 };
 
 //the schema has to be specified in here too, then
-// module.exports = class SyncHandler {
-  export default class SyncHandler {
+module.exports = class SyncHandler {
   //method to ask user for URI or have it initialized when the object is created
   constructor(uri) {
     this.clients = [];

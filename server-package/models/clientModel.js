@@ -1,7 +1,6 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-import dotenv from "dotenv";
-dotenv.config();
+require('dotenv').config();
 
 //mongoose
 //  .connect(process.env.DB_URI, {
@@ -19,4 +18,4 @@ dotenv.config();
   });
 
   // module.exports = mongoose.model('Client', clientSchema)
-  export default mongoose.model('Client', clientSchema);
+  module.exports = mongoose.model('Client', clientSchema);
