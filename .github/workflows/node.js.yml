@@ -22,7 +22,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-    - run: '(cd package-client && npm ci)'
-    - run: '(cd package-server && npm ci)'
-    - run: '(cd package-client && npm test)'
-    - run: '(cd package-server && npm test)'
+    - run: '(cd client-package && npm ci)'
+    - run: '(cd server-package && npm ci)'
+    - run: '(cd client-package && npm test)'
+    - run: '(cd server-package && npm test)'
