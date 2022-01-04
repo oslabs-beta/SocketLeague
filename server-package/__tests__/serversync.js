@@ -172,7 +172,7 @@ describe("WebSocket Server", () => {
     await expect(client).toReceiveClientMessage('initialize client 2');
   });
 
-  it("Server reverts to correct state after three updates, two undos, two updates, and two undos.", async () => {
+  xit("Server reverts to correct state after three updates, two undos, two updates, and two undos.", async () => {
     const client = new MockClient(WS_URI);
     await client.connected;
 

@@ -1,21 +1,18 @@
 name: Node.js CI
 
 on:
-  push:
-    branches: [ main, dev ]
   pull_request:
     branches: [ main, dev ]
 
 jobs:
-  build:
-
+  test:
+    environment: testing
+    env:
+      DB_URI: ${{ secrets.DB_URI }}
     runs-on: ubuntu-latest
-
     strategy:
       matrix:
-        node-version: [12.x, 14.x, 16.x]
-         See supported Node.js release schedule at https://nodejs.org/en/about/releases/
-
+        node-version: [16.x]
     steps:
     - uses: actions/checkout@v2
     - name: Use Node.js ${{ matrix.node-version }}
@@ -23,7 +20,7 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-    - run: '(cd package-client && npm ci)'
-    - run: '(cd package-server && npm ci)'
-    - run: '(cd package-client && npm test)'
-    - run: '(cd package-server && npm test)'
+    - run: '(cd server-package && npm ci)'
+    - run: '(cd server-package && npm test)'
+    - run: '(cd client-package && npm ci)'
+    - run: '(cd client-package && npm test)'
