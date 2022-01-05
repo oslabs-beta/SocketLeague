@@ -20,7 +20,7 @@ socket.onerror = function (error) {
 function sendWebSocketMessage(socketState) {
   console.log('We are in the send update websocket message function');
   const msgObject = {};
-  msgObject.state = [socketState];
+  msgObject.state = [...socketState];
   const newContent = {
     timestamp: new Date().toLocaleString(),
     message,
@@ -38,7 +38,7 @@ function sendWebSocketMessage(socketState) {
 function sendWebSocketUndoMessage(socketState) {
   console.log('We are in the send undo websocket message function');
   const msgObject = {};
-  msgObject.state = [socketState];
+  msgObject.state = [...socketState];
   msgObject.state.timestamp = new Date().toLocaleString();
   msgObject.state.message = message;
   msgObject.state.user = 'anon';
@@ -47,13 +47,15 @@ function sendWebSocketUndoMessage(socketState) {
   conn._publish(msgObject);
 }
 
-function toggleSession() {
-  if (session_id === '0') {
-    session_id = '1';
-  } else {
-    session_id = '0';
-  }
-  console.log('the session id is ', session_id);
+function joinSession0() {
+  console.log('Welcome to chat room 1');
+  session_id = '0';
+  //ADD LOGIC TO INITIALIZE SESSION
+}
+function joinSession1() {
+  console.log('Welcome to chat room 2');
+  session_id = '1';
+  //ADD LOGIC TO INITIALIZE SESSION
 }
 
 socket.onmessage = function (event) {
@@ -69,7 +71,6 @@ socket.onmessage = function (event) {
       const readState = JSON.parse(reader.result);
       //we need to set this object as the state for the client
       console.log(readState);
-      //document.getElementById('echoTextDisplay').value = readState;
     };
 
     reader.readAsText(event.data);
@@ -82,35 +83,32 @@ const conn = new Connection('ws://localhost:3000');
 
 const App = () => {
   console.log('attempting to render app');
-  //const [color, setColor, undoColor] = useSyncState('red', conn, React);
-  // const sessionIdRoom1 = 0;
-  // const sessionIdRoom2 = 1;
-  // const [socketState, setSocketState, undoSocketState] = useSyncState(
-  //   '',
-  //   conn,
-  //   React
-  // );
-  const [socketState] = useSyncState('', conn, React);
+  const [socketState, setSocketState, undoSocketState] = useSyncState(
+    '',
+    conn,
+    React
+  );
   const textMsg = [];
-  for (let i = 1; i < socketState.length; i++) {
+  for (let i = 0; i < socketState.length; i++) {
     textMsg.push(
-      //socketState[i]
-      `Time: ${socketState[i].timestamp} User: ${socketState[i].user} Message: ${socketState[i].message}\n`
+      `Time: ${socketState[i].timestamp} User: ${socketState[i].user} Message: ${socketState[i].message}`
     );
   }
+  let session = session_id;
   console.log('socketstate is , ', socketState);
   console.log('textMsg is , ', textMsg);
   return (
     <div>
       <h1>Socket League Demo (Anonymous Chat Room)</h1>
-      <button onClick={() => toggleSession()}>Chat Room 1</button>
-      <button onClick={() => toggleSession()}>Chat Room 2</button>
+      <button onClick={() => joinSession0()}>Chat Room 1</button>
+      <button onClick={() => joinSession1()}>Chat Room 2</button>
+      <span>Current Session ID is {session_id}</span>
       <br></br>
       <textarea
         style={{ width: '500px', height: '300px' }}
         className="textDisplay"
         id="echoTextDisplay"
-        value={textMsg}
+        value={textMsg.join('\n')}
       ></textarea>
       <br></br>
       <input
@@ -126,7 +124,6 @@ const App = () => {
       {/* <button onClick={() => setColor('blue')}>Blue</button> */}
       {/* <button onClick={() => undoColor()}>Undo color</button> */}
       {/* <span>{socketState}</span> */}
-      <span>Current Session ID is {session_id}</span>
     </div>
   );
 };

@@ -62,7 +62,7 @@ module.exports = class SyncHandler {
             this.sessions[stateChange.session].add(socket);
           }
           for (const client of this.sessions[stateChange.session]) {
-            client.send(JSON.stringify(data[0].state));
+            client.send(JSON.stringify(data[data.length-1].state));
           }
         } else {
           db.create({ session: stateChange.session, state: stateChange.state })
