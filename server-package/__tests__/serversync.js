@@ -33,37 +33,51 @@ describe("WebSocket Server", () => {
   });
 
   it('Server clears the database', async () => {
+    await syncState.__getDB().create({state: {}, session: "0"});
     await syncState.clearState();
-    const sessionRecords = await syncState.__getDB().find({ session: "0" });
+    const sessionRecords = await syncState.__getDB().find();
     expect(sessionRecords).toEqual([]);
   });
 
   it('Client receives initial state when joining a new session', async () => {
+    await syncState.clearState();
     const client = new MockClient(WS_URI);
     await client.connected;
 
     client.send({
-      state: 'this is a test message1',
+      state: 'this is a test message',
       action: 'initial',
       session: '0'
     });
-    await expect(client).toReceiveClientMessage('this is a test message1');
+    await expect(client).toReceiveClientMessage('this is a test message');
   });
 
 
   it("Server sends an existing state to the client when the client connects with a valid session ID", async () => {
-    const client = new MockClient(WS_URI);
-    await client.connected;
+    await syncState.clearState();
+    const client1 = new MockClient(WS_URI);
+    await client1.connected;
     
-    client.send({
-      state: 'fake message',
+    client1.send({
+      state: 'initial state',
       action: 'initial',
       session: '0',
     });
-    await expect(client).toReceiveClientMessage('this is a test message1');
+    await client1.nextMessage;
+
+    const client2 = new MockClient(WS_URI);
+    await client2.connected;
+    client2.send({
+      state: 'different initial state',
+      action: 'initial',
+      session: '0',
+    });
+
+    await expect(client2).toReceiveClientMessage('initial state');
   });
 
   it("Server broadcasts updated state to all clients with same session ID when it receives an updated state", async () => {
+    await syncState.clearState();
     const client1 = new MockClient(WS_URI);
     const client2 = new MockClient(WS_URI);
     await client1.connected;
@@ -74,13 +88,14 @@ describe("WebSocket Server", () => {
       action: 'initial',
       session: '0',
     });
-    await expect(client1).toReceiveClientMessage('this is a test message1');
+    await client1.nextMessage;
+    
     client2.send({
       state: 'initialize client 2',
       action: 'initial',
       session: '0',
     });
-    await expect(client2).toReceiveClientMessage('this is a test message1');
+    await client2.nextMessage;
 
     client1.send({
       state: 'new message',
@@ -91,6 +106,7 @@ describe("WebSocket Server", () => {
   });
 
   it("Server broadcasts updated state to only appropriate clients when it receives an updated state", async () => {
+    await syncState.clearState();
     const client1 = new MockClient(WS_URI);
     const client2 = new MockClient(WS_URI);
     await client1.connected;
@@ -102,6 +118,7 @@ describe("WebSocket Server", () => {
       session: '4',
     });
     await expect(client1).toReceiveClientMessage('initialize client 1');
+    
     client2.send({
       state: 'initialize client 2',
       action: 'initial',
@@ -110,7 +127,7 @@ describe("WebSocket Server", () => {
     await expect(client2).toReceiveClientMessage('initialize client 2');
 
     client1.send({
-      state: 'new message',
+      state: 'session four update',
       action: 'update',
       session: '4',
     });
@@ -119,11 +136,12 @@ describe("WebSocket Server", () => {
       action: 'update',
       session: '3',
     });
-    await expect(client1).toReceiveClientMessage('new message');
+    await expect(client1).toReceiveClientMessage('session four update');
     await expect(client2).toReceiveClientMessage('session three update');
   });
 
   it("Server stores updates to the state in the database (upon receiving the update call).", async () => {
+    await syncState.clearState();
     const client = new MockClient(WS_URI);
     await client.connected;
     
@@ -149,30 +167,44 @@ describe("WebSocket Server", () => {
   });
 
   it("Server reverts to the previous state stored in the database for a given session (upon receiving the undo call).", async () => {
+    await syncState.clearState();
     const client = new MockClient(WS_URI);
     await client.connected;
 
     client.send({
-      state: 'initialize undo test',
+      state: 'initial state',
       action: 'initial',
       session: '0',
     });
-    await expect(client).toReceiveClientMessage('this is a test message1');
+    await client.nextMessage;
+    client.send({
+      state: 'update1',
+      action: 'update',
+      session: '0',
+    });
+    await client.nextMessage;
+    client.send({
+      state: 'update2',
+      action: 'update',
+      session: '0',
+    });
+    await client.nextMessage;
 
     client.send({
       action: 'undo',
       session: '0',
     });
-    await expect(client).toReceiveClientMessage('this is a test message1');
+    await expect(client).toReceiveClientMessage('update1');
 
     client.send({
       action: 'undo',
       session: '0',
     });
-    await expect(client).toReceiveClientMessage('initialize client 2');
+    await expect(client).toReceiveClientMessage('initial state');
   });
 
   xit("Server reverts to correct state after three updates, two undos, two updates, and two undos.", async () => {
+    await syncState.clearState();
     const client = new MockClient(WS_URI);
     await client.connected;
 
@@ -189,7 +221,7 @@ describe("WebSocket Server", () => {
       action: 'update',
       session: '0',
     });
-    await expect(client).toReceiveClientMessage('first update');
+    await client.nextMessage;
 
     // The undo seems to fail unpredictably, so we are repeating the 
     // following messages multiple times to ensure that the test will
@@ -201,7 +233,7 @@ describe("WebSocket Server", () => {
         action: 'update',
         session: '0',
       });
-      await expect(client).toReceiveClientMessage('second update');
+      await client.nextMessage;
 
        // third update [history: 1 > 2 > 3]
        client.send({
@@ -209,7 +241,7 @@ describe("WebSocket Server", () => {
         action: 'update',
         session: '0',
       });
-      await expect(client).toReceiveClientMessage('third update');
+      await client.nextMessage;
 
       // first undo [history: 1 > 2]
       client.send({
@@ -231,7 +263,7 @@ describe("WebSocket Server", () => {
         action: 'update',
         session: '0',
       });
-      await expect(client).toReceiveClientMessage('fourth update');
+      await client.nextMessage;
 
       // fifth update [history: 1 > 4 > 5]
       client.send({
@@ -239,7 +271,7 @@ describe("WebSocket Server", () => {
         action: 'update',
         session: '0',
       });
-      await expect(client).toReceiveClientMessage('fifth update');
+      await client.nextMessage;
 
       // third undo [history: 1 > 4]
       client.send({
