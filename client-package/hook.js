@@ -19,7 +19,8 @@ export class Connection {
 
     this.subscriptions = new Map();
     this.socket.addEventListener('message', (message) => {
-      const session = '0';
+      const parsedMessage = JSON.parse(message.data);
+      const { session, state } = parsedMessage;
       const callback = this.subscriptions.get(session);
       if (!callback) {
         console.log(
@@ -27,8 +28,7 @@ export class Connection {
         );
         return;
       }
-      const parsedMessage = JSON.parse(message.data);
-      callback(parsedMessage);
+      callback(state);
     });
 
     this.socket.onopen = () => {
@@ -39,8 +39,7 @@ export class Connection {
     };
   }
 
-  subscribe(onMessage, initialState) {
-    const session = '0';
+  subscribe(session, onMessage, initialState) {
     if (this.subscriptions.has(session)) {
       console.log(
         `[SL] Warning: a subscription already exists for session ${session}. Overriding the old message handler.`
@@ -52,7 +51,7 @@ export class Connection {
     this._publish({ action, state, session });
   }
 
-  unsubscribe() {
+  unsubscribe(session) {
     if (!this.subscriptions.has(session)) {
       console.log(
         `[SL] Warning: no subscription exists for session ${session}. Doing nothing.`
@@ -62,16 +61,14 @@ export class Connection {
     this.subscriptions.delete(session);
   }
 
-  sendUndo() {
+  sendUndo(session) {
     const action = types.UNDO;
-    const session = '0';
     this._publish({ action, session });
   }
 
-  sendUpdate(newState) {
+  sendUpdate(session, newState) {
     const action = types.UPDATE;
     const state = newState;
-    const session = '0';
     this._publish({ action, state, session });
   }
 
@@ -85,46 +82,24 @@ export class Connection {
   }
 }
 
-export const useSyncState = (initialState, conn, react) => {
+export const useSyncState = (session, initialState, conn, react) => {
   const [state, setState] = react.useState(initialState);
   const handleMessage = (message) => {
     setState(message);
-    /*
-    const reader = new FileReader();
-
-    //reader.onload is invoked as a result of readAsText
-    reader.onload = () => {
-      //convert reader.result from a string to an object
-      console.log(`raw result: ${reader.result}`);
-      const readState = JSON.parse(reader.result);
-      //we need to set this object as the state for the client
-      console.log(`parsed result: ${readState}`);
-      setState(readState);
-    };
-
-    console.log("Mesage type: ", message);
-    reader.readAsText(message.data);
-    */
   };
 
-  console.log('invoking useEffect');
   react.useEffect(() => {
-    console.log('subscribing');
-    conn.subscribe(handleMessage, initialState);
-    console.log('finished subscribing');
-    return conn.unsubscribe;
+    conn.subscribe(session, handleMessage, initialState);
+    return () => conn.unsubscribe(session);
   }, []);
-  console.log('finished invoking useEffect');
 
   const setSyncState = (newState) => {
-    console.log('invoking react setState');
     setState(newState);
-    console.log('finished invoking react setState');
-    conn.sendUpdate(newState);
+    conn.sendUpdate(session, newState);
   };
 
   const undo = () => {
-    conn.sendUndo();
+    conn.sendUndo(session);
   };
 
   return [state, setSyncState, undo];
