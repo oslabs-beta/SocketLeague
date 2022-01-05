@@ -18,11 +18,13 @@ export class Connection {
     this.pendingMessageData = [];
 
     this.subscriptions = new Map();
-    this.socket.addEventListener("message", message => {
+    this.socket.addEventListener('message', (message) => {
       const session = '0';
       const callback = this.subscriptions.get(session);
       if (!callback) {
-        console.log(`[SL] Warning: no handler registered for session ${session}. Ignoring message.`);
+        console.log(
+          `[SL] Warning: no handler registered for session ${session}. Ignoring message.`
+        );
         return;
       }
       const parsedMessage = JSON.parse(message.data);
@@ -36,21 +38,25 @@ export class Connection {
       this.pendingMessageData = [];
     };
   }
-  
+
   subscribe(onMessage, initialState) {
     const session = '0';
     if (this.subscriptions.has(session)) {
-      console.log(`[SL] Warning: a subscription already exists for session ${session}. Overriding the old message handler.`);
+      console.log(
+        `[SL] Warning: a subscription already exists for session ${session}. Overriding the old message handler.`
+      );
     }
     this.subscriptions.set(session, onMessage);
     const action = types.INITIAL;
     const state = initialState;
     this._publish({ action, state, session });
-  }  
+  }
 
   unsubscribe() {
     if (!this.subscriptions.has(session)) {
-      console.log(`[SL] Warning: no subscription exists for session ${session}. Doing nothing.`);
+      console.log(
+        `[SL] Warning: no subscription exists for session ${session}. Doing nothing.`
+      );
       return;
     }
     this.subscriptions.delete(session);
@@ -73,17 +79,15 @@ export class Connection {
     const data = JSON.stringify(message);
     if (this.socket.readyState === WebSocket.OPEN) {
       this.socket.send(data);
-    }
-    else {
+    } else {
       this.pendingMessageData.push(data);
     }
   }
-};
-
+}
 
 export const useSyncState = (initialState, conn, react) => {
   const [state, setState] = react.useState(initialState);
-  const handleMessage = message => {
+  const handleMessage = (message) => {
     setState(message);
     /*
     const reader = new FileReader();
@@ -103,13 +107,19 @@ export const useSyncState = (initialState, conn, react) => {
     */
   };
 
+  console.log('invoking useEffect');
   react.useEffect(() => {
+    console.log('subscribing');
     conn.subscribe(handleMessage, initialState);
+    console.log('finished subscribing');
     return conn.unsubscribe;
   }, []);
+  console.log('finished invoking useEffect');
 
-  const setSyncState = newState => {
+  const setSyncState = (newState) => {
+    console.log('invoking react setState');
     setState(newState);
+    console.log('finished invoking react setState');
     conn.sendUpdate(newState);
   };
 
