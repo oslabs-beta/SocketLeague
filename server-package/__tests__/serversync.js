@@ -43,11 +43,11 @@ describe("WebSocket Server", () => {
     await client.connected;
 
     client.send({
-      state: 'this is a test message',
+      state: 'this is a test message1',
       action: 'initial',
       session: '0'
     });
-    await expect(client).toReceiveClientMessage('this is a test message');
+    await expect(client).toReceiveClientMessage('this is a test message1');
   });
 
 
@@ -56,14 +56,14 @@ describe("WebSocket Server", () => {
     await client.connected;
     
     client.send({
-      state: 'this is a test message',
+      state: 'fake message',
       action: 'initial',
       session: '0',
     });
-    await expect(client).toReceiveClientMessage('this is a test message');
+    await expect(client).toReceiveClientMessage('this is a test message1');
   });
 
-  it("Server broadcasts updated state to all clients when it receives an updated state", async () => {
+  it("Server broadcasts updated state to all clients with same session ID when it receives an updated state", async () => {
     const client1 = new MockClient(WS_URI);
     const client2 = new MockClient(WS_URI);
     await client1.connected;
@@ -74,13 +74,13 @@ describe("WebSocket Server", () => {
       action: 'initial',
       session: '0',
     });
-    await expect(client1).toReceiveClientMessage('initialize client 1');
+    await expect(client1).toReceiveClientMessage('this is a test message1');
     client2.send({
       state: 'initialize client 2',
       action: 'initial',
       session: '0',
     });
-    await expect(client2).toReceiveClientMessage('initialize client 2');
+    await expect(client2).toReceiveClientMessage('this is a test message1');
 
     client1.send({
       state: 'new message',
@@ -157,13 +157,13 @@ describe("WebSocket Server", () => {
       action: 'initial',
       session: '0',
     });
-    await expect(client).toReceiveClientMessage('initialize undo test');
+    await expect(client).toReceiveClientMessage('this is a test message1');
 
     client.send({
       action: 'undo',
       session: '0',
     });
-    await expect(client).toReceiveClientMessage('new message');
+    await expect(client).toReceiveClientMessage('this is a test message1');
 
     client.send({
       action: 'undo',

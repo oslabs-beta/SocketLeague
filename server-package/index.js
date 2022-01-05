@@ -1,2 +1,2 @@
-const { SyncHandler } = require('./syncHandler.js');
+const  SyncHandler  = require('./syncHandler.js');
 module.exports = { SyncHandler }
