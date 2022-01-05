@@ -8,7 +8,7 @@ const SyncHandler = require('socket-league-server');
 
 //initialize syncState with the URI of the database where the state is stored (ZL 12.29)
 // const syncState = new sl.SyncHandler(process.env.DB_URI);
-console.log('try this',SyncHandler);
+console.log('try this', SyncHandler);
 const syncState = new SyncHandler.SyncHandler(process.env.DB_URI);
 syncState.connect();
 
@@ -17,6 +17,8 @@ const PORT = 3000;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+
+app.use('/build', express.static(path.resolve(__dirname, '../build')));
 
 app.get('/', (req, res) => {
   res.sendFile(path.resolve(__dirname, '../index.html'));

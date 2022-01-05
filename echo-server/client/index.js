@@ -1,6 +1,8 @@
 import React from 'react';
 import { render } from 'react-dom';
 import App from './App.jsx';
+import '../style.css';
+
 // const ws = require('ws');
 
 // const client = new ws('ws://localhost:3000');
