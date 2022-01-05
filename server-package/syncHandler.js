@@ -37,8 +37,8 @@ module.exports = class SyncHandler {
   //server sends 'state' and the 'session' only?
   handleState(message, socket) {
     function sendStateUpdate(record, client) {
-      // client.send(JSON.stringify({ state: record.state, session: record.session }))
-      client.send(JSON.stringify(record.state));
+      client.send(JSON.stringify({ state: record.state, session: record.session }))
+      // client.send(JSON.stringify(record.state));
     }
     //parse the message into a json object?
     const stateChange = JSON.parse(message); //message.json(); //stateChange will be an object now
