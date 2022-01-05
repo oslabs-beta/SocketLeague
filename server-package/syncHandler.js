@@ -156,7 +156,10 @@ module.exports = class SyncHandler {
     this.clients.push(socket);
   }
   async clearState() {
-    await db.collection.drop();
+    const sessionRecords = await db.find();
+    if (sessionRecords.length) {
+      await db.collection.drop();
+    }
   }
   __getDB() {
     return db;
