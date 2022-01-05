@@ -11,15 +11,6 @@ body {
 
 div.displayBox {
   display: flex;
-  flex-direction: column;
-  justify-content: top;
-  align-items: center;
-  font-size: 20px;
-  text-align: center;
-}
-
-textarea {
-  display: flex;
   flex-direction: column-reverse;
   overflow-x: hidden;
   overflow-y: scroll;
@@ -29,5 +20,29 @@ textarea {
   height: 600px;
   border-radius: 3%;
   border-width: 2px;
+  border-color: black;
 }
+
+#username {
+  font-size: 15px;
+}
+
+#echoText {
+  font-size: 15px;
+}
+
+#message-box {
+  background-color: dodgerblue;
+  border-radius: 3%;
+}
+#message {
+  font-size: 40px;
+  color: aliceblue;
+}
+
+#timestamp-user {
+  font-size: 20px;
+  color: aliceblue;
+}
+
 

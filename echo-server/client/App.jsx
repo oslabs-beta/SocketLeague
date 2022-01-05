@@ -67,23 +67,33 @@ const conn = new Connection('ws://localhost:3000');
 const App = () => {
   console.log('attempting to render app');
   const [socketState, setSocketState, undoSocketState] = useSyncState(
+    //session_id,
     '',
     conn,
     React
   );
+
   const textMsg = [];
   for (let i = 0; i < socketState.length; i++) {
     textMsg.push(
-      `[${socketState[i].timestamp}] ${socketState[i].user}: ${socketState[i].message}`
+      <tr>
+        <div id="message-box">
+          <p id="message">{socketState[i].message}</p>
+          <p id="timestamp-user">
+            {socketState[i].timestamp} ~ {socketState[i].user}
+          </p>
+        </div>
+      </tr>
     );
   }
+
   let session = session_id;
   console.log('socketstate is , ', socketState);
   console.log('textMsg is , ', textMsg);
   return (
     <div className="main-container">
       <div className="title">
-        <h1>Socket League Demo (Chat Room)</h1>
+        <h1>Socket League Demo (Chat Rooms)</h1>
       </div>
       <div className="sessionBtns">
         <button onClick={() => joinSession(0)}>Chat Room 1</button>
@@ -94,11 +104,7 @@ const App = () => {
       </div>
       <br></br>
       <div className="displayBox">
-        <textarea
-          className="textDisplay"
-          id="echoTextDisplay"
-          value={textMsg.join('\n')}
-        ></textarea>
+        <table>{textMsg}</table>
       </div>
       <br></br>
       <div className="userInputs">
