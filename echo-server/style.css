@@ -1,0 +1,33 @@
+
+
+body {
+  display: flex;
+  flex-direction: column;
+  justify-content: top;
+  align-items: center;
+  font-size: 20px;
+  text-align: center;
+}
+
+div.displayBox {
+  display: flex;
+  flex-direction: column;
+  justify-content: top;
+  align-items: center;
+  font-size: 20px;
+  text-align: center;
+}
+
+textarea {
+  display: flex;
+  flex-direction: column-reverse;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  overscroll-behavior: contain;
+  scroll-snap-align: end;
+  width: 600px;
+  height: 600px;
+  border-radius: 3%;
+  border-width: 2px;
+}
+
