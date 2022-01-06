@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useSyncState, Connection } from 'socket-league-client';
-import '../style.css';
+import '../style.scss';
 
 let message = 'hello, I clicked a button!';
 
