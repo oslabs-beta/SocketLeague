@@ -20,7 +20,7 @@ const types = {
 module.exports = class SyncHandler {
   //method to ask user for URI or have it initialized when the object is created
   constructor(uri) {
-    // this.clients = [];
+    this.clients = [];
     this.sessions = {};
     this.dbUri = uri;
   }
@@ -159,9 +159,9 @@ module.exports = class SyncHandler {
     if (stateChange.action === "redo") {
     }
   }
-  // addSocket(socket) {
-  //   this.clients.push(socket);
-  // }
+  addSocket(socket) {
+    this.clients.push(socket);
+  }
   async clearState() {
     const sessionRecords = await db.find();
     if (sessionRecords.length) {

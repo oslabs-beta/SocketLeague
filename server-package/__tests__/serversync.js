@@ -223,9 +223,9 @@ describe("WebSocket Server", () => {
     });
     await client.nextMessage;
 
-    // The undo seems to fail unpredictably, so we are repeating the 
-    // following messages multiple times to ensure that the test will
-    // fail
+    // The undo used to fail unpredictably, so we are repeating the 
+    // following messages multiple times to increase the likelihood
+    // that the test fails if there is an issue
     for (let i = 0; i < 3; i++) {
       // second update [history: 1 > 2]
       client.send({
@@ -287,6 +287,6 @@ describe("WebSocket Server", () => {
       });
       await expect(client).toReceiveClientMessage({session:'0', state:'first update'});
     }
-  });
+  }, 10000);
 });
 

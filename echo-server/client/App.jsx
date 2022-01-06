@@ -20,7 +20,7 @@ const App = () => {
   function sendWebSocketMessage() {
     console.log('We are in the send update websocket message function');
     const newMessage = {
-      timestamp: new Date().toLocaleString(),
+      timestamp: new Date().toUTCString(),
       message,
       user: document.getElementById('username').value,
     };
@@ -29,13 +29,14 @@ const App = () => {
 
   const textMsg = [];
   for (let i = 0; i < socketState.length; i++) {
+    const timeString = new Date(socketState[i].timestamp).toLocaleString();
     if (socketState[i].user === document.getElementById('username').value) {
       textMsg.push(
         <tr>
           <div className="message-box-self">
             <p className="message-self">{socketState[i].message}</p>
             <p className="timestamp-user-self">
-              {socketState[i].timestamp} ~ {socketState[i].user}
+              {timeString} ~ {socketState[i].user}
             </p>
           </div>
         </tr>
@@ -46,7 +47,7 @@ const App = () => {
           <div className="message-box-other">
             <p className="message-other">{socketState[i].message}</p>
             <p className="timestamp-user-other">
-              {socketState[i].timestamp} ~ {socketState[i].user}
+              {timeString} ~ {socketState[i].user}
             </p>
           </div>
         </tr>
