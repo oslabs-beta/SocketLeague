@@ -1,4 +1,6 @@
-
+@import url('https://fonts.googleapis.com/css2?family=Bangers&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Alegreya&family=Bangers&display=swap');
+@import url(https://fonts.googleapis.com/css?family=Righteous);
 
 body {
   display: flex;
@@ -6,6 +8,25 @@ body {
   justify-content: top;
   align-items: center;
   font-size: 20px;
+  text-align: center;
+  overflow: hidden;
+
+  background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+  background-size: 400% 400%;
+  animation: gradient 30s ease infinite;
+  height: 100vh;
+}
+
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 div.displayBox {
@@ -17,6 +38,16 @@ div.displayBox {
   scroll-snap-align: end;
   width: 600px;
   height: 600px;
+  background: white;
+  border-style: solid;
+  border-radius: 3%;
+  border-width: 2px;
+  border-color: black;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+div.root {
+  border-style: solid;
   border-radius: 3%;
   border-width: 2px;
   border-color: black;
@@ -30,19 +61,97 @@ div.displayBox {
   font-size: 15px;
 }
 
-#message-box {
+div.message-box-self {
   background-color: dodgerblue;
-  border-radius: 3%;
-  margin: 0 0 4px 0;
+  margin-left: 100px;
+  border-radius: 10px;
+  box-shadow: 10px 5px 5px grey;
 }
-#message {
+
+*,
+*:before,
+*:after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  position: relative;
+}
+
+h1 {
+  display: inline-block;
+  color: white;
+  font-family: 'Righteous', serif;
+  font-size: 75px; 
+  text-shadow: .03em .03em 0 hsla(230,40%,50%,1);
+  }
+  h1:after {
+    content: attr(data-shadow);
+    position: absolute;
+    top: .06em; left: .06em;
+    z-index: -1;
+    text-shadow: none;
+    background-image:
+      linear-gradient(
+        45deg,
+        transparent 45%,
+        hsla(48,20%,90%,1) 45%,
+        hsla(48,20%,90%,1) 55%,
+        transparent 0
+        );
+    background-size: .05px .05px;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  
+    animation: shad-anim 15s linear infinite;
+    }
+
+@keyframes shad-anim {
+  0% {background-position: 0 0}
+  0% {background-position: 100% -100%}
+  }
+
+p {
+  font-family: 'Alegreya', serif;
+}
+
+p.message-self {
   font-size: 20px;
   color: aliceblue;
+  text-align: left;
+  padding-left: 8px;
+  padding-top: 8px;
+  margin: 10px;
 }
 
-#timestamp-user {
+p.timestamp-user-self {
   font-size: 12px;
   color: aliceblue;
+  text-align: right;
+  padding-right: 10px;
+  padding-bottom: 3px;
+  margin: 10px;
 }
 
+div.message-box-other {
+  background-color: darkgrey;
+  margin-right: 100px;
+  border-radius: 15px;
+  box-shadow: 10px 5px 5px grey;
+}
+p.message-other {
+  font-size: 20px;
+  color: aliceblue;
+  text-align: left;
+  padding-left: 8px;
+  padding-top: 8px;
+  margin: 10px;
+}
 
+p.timestamp-user-other {
+  font-size: 12px;
+  color: aliceblue;
+  text-align: right;
+  padding-right: 10px;
+  padding-bottom: 3px;
+  margin: 10px;
+}

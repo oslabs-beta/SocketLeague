@@ -20,7 +20,7 @@ const types = {
 module.exports = class SyncHandler {
   //method to ask user for URI or have it initialized when the object is created
   constructor(uri) {
-    this.clients = [];
+    // this.clients = [];
     this.sessions = {};
     this.dbUri = uri;
   }
@@ -40,20 +40,15 @@ module.exports = class SyncHandler {
       client.send(JSON.stringify({ state: record.state, session: record.session }))
       // client.send(JSON.stringify(record.state));
     }
-    //parse the message into a json object?
+    //parse the message into a json object
     const stateChange = JSON.parse(message); //message.json(); //stateChange will be an object now
-
-    //stateChange has: session ID, state object with properties corresponding to parts of the state, and an action
-    //handle websocket connection events (initial, undo, update)
 
     /*  INITIAL:
             This is for initial connection to an existing session or to a new session.
             If the stateChange action is 'initial', first check for an existing session ID associated with the message. 
             If it exists, the server connects the client to the existing state.
             If the session ID does not exist, a new one is created and a new database entry is also created.
-            Future updates:
-            - refactor for of loop to send to only certain clients
-            - create a unique session ID
+            Only clients with the right session ID receive updates
       */
     if (stateChange.action === "initial") {
       console.log(`Got an initial message: ${message}`);
@@ -94,11 +89,10 @@ module.exports = class SyncHandler {
           Find all the clients that are sharing the same session ID, and update their current to the new state. 
       */
     if (stateChange.action === "update") {
+      // console.log(`Got an update message:`);
       console.log(`Got an update message: ${message}`);
       //add new messages to the list of all messages
-      console.log("state Change is ", stateChange);
-
-      //we need this to create a new entry, not update!
+      //we need this to create a new entry
       db.create({ session: stateChange.session, state: stateChange.state })
         .then((data) => {
           //redundant because we have the record we just added but search the database for the latest record anyway
@@ -127,10 +121,11 @@ module.exports = class SyncHandler {
             database and delete it. The last record before the one deleted will be sent out to all clients and become the current state.
       */
     if (stateChange.action === "undo") {
+      console.log(`Got an undo message: ${message}`);
       db.find({ session: stateChange.session })
         .then((data) => {
           if (data.length > 1) {
-            console.log(data[data.length - 1]._id, " will be deleted.");
+            // console.log(data[data.length - 1]._id, " will be deleted.");
             db.findOneAndDelete({ _id: data[data.length - 1]._id }).then(
               (data) => {
                 console.log(data._id, "was deleted");
@@ -156,30 +151,6 @@ module.exports = class SyncHandler {
         });
     }
 
-    if (stateChange.action === "badundo") {
-      console.log(`Got an undo request: ${message}`);
-      db.findOneAndDelete(
-        { session: stateChange.session },
-        { sort: { _id: -1 } }
-      )
-        .then((data) => {
-          console.log(data, " will be deleted.");
-        })
-        .catch((err) => {
-          console.log("Error in undo", err);
-        });
-      for (const client of this.sessions[stateChange.session]) {
-        //TODO: error handle for if the array is empty later
-        db.find({ session: stateChange.session })
-          .then((sessionRecords) => {
-            sendStateUpdate(sessionRecords[sessionRecords.length - 1], client);
-          })
-          .catch((err) => {
-            console.log("Error in finding session for undo", err);
-          });
-      }
-    }
-
     /*  REDO: **feature not yet functional**
           This is for 'redoing' an undo.
           If the stateChange action is 'redo', the recently deleted or undone state will be reverted. This reverted state will then
@@ -188,9 +159,9 @@ module.exports = class SyncHandler {
     if (stateChange.action === "redo") {
     }
   }
-  addSocket(socket) {
-    this.clients.push(socket);
-  }
+  // addSocket(socket) {
+  //   this.clients.push(socket);
+  // }
   async clearState() {
     const sessionRecords = await db.find();
     if (sessionRecords.length) {
