@@ -20,7 +20,6 @@ describe("WebSocket Server", () => {
     await syncState.connect();
 
     function handleWsConnection(socket) {
-      syncState.addSocket(socket);
       socket.on("message", (message) => {
         syncState.handleState(message, socket);
       });
