@@ -1,104 +1,74 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useSyncState, Connection } from 'socket-league-client';
 import '../style.css';
 
-const socket = new WebSocket('ws://localhost:3000');
 let message = 'hello, I clicked a button!';
-let session_id = '0';
-
-socket.onerror = function (error) {
-  alert(`[error] ${error.message}`);
-};
-
-/**
- * This function formats the message in an object
- * called msgObject and sends it to the web socket
- * @param socketState is the current state
- */
-function sendWebSocketMessage(socketState) {
-  console.log('We are in the send update websocket message function');
-  const username = document.getElementById('username').value;
-  const msgObject = {};
-  msgObject.state = [...socketState];
-  const newContent = {
-    timestamp: new Date().toLocaleString(),
-    message,
-    user: username,
-  };
-  msgObject.state.push(newContent);
-  msgObject.action = 'update';
-  msgObject.session = session_id;
-  console.log('we are about to attempt to send');
-  conn._publish(msgObject);
-  console.log('send successful');
-  document.getElementById('echoText').value = '';
-}
-
-/**
- * This function will undo the most recent state change
- * @param socketState is the current state
- */
-function sendWebSocketUndoMessage(socketState) {
-  console.log('We are in the send undo websocket message function');
-  const username = document.getElementById('username').value;
-  const msgObject = {};
-  // are the below 4 lines needed for the undo function? I think all we need is action and session
-  msgObject.state = [...socketState];
-  msgObject.state.timestamp = new Date().toLocaleString();
-  msgObject.state.message = message;
-  msgObject.state.user = username;
-  msgObject.action = 'undo';
-  msgObject.session = session_id;
-  conn._publish(msgObject);
-}
-
-/**
- * Function to handle session joining
- * @param session This is the session id that is being joined
- */
-function joinSession(session) {
-  console.log(`Welcome to chat room ${session}`);
-  session_id = session;
-  //ADD LOGIC TO INITIALIZE SESSION
-}
 
 const conn = new Connection('ws://localhost:3000');
 
 const App = () => {
   console.log('attempting to render app');
+  const [session, setSession] = useState('0');
+
   const [socketState, setSocketState, undoSocketState] = useSyncState(
+    session,
     '',
     conn,
     React
   );
+
+  function sendWebSocketMessage() {
+    console.log('We are in the send update websocket message function');
+    const newMessage = {
+      timestamp: new Date().toUTCString(),
+      message,
+      user: document.getElementById('username').value,
+    };
+    setSocketState([...socketState, newMessage]);
+  }
+
   const textMsg = [];
   for (let i = 0; i < socketState.length; i++) {
-    textMsg.push(
-      `[${socketState[i].timestamp}] ${socketState[i].user}: ${socketState[i].message}`
-    );
+    const timeString = new Date(socketState[i].timestamp).toLocaleString();
+    if (socketState[i].user === document.getElementById('username').value) {
+      textMsg.push(
+        <tr>
+          <div className="message-box-self">
+            <p className="message-self">{socketState[i].message}</p>
+            <p className="timestamp-user-self">
+              {timeString} ~ {socketState[i].user}
+            </p>
+          </div>
+        </tr>
+      );
+    } else {
+      textMsg.push(
+        <tr>
+          <div className="message-box-other">
+            <p className="message-other">{socketState[i].message}</p>
+            <p className="timestamp-user-other">
+              {timeString} ~ {socketState[i].user}
+            </p>
+          </div>
+        </tr>
+      );
+    }
   }
-  let session = session_id;
-  console.log('socketstate is , ', socketState);
-  console.log('textMsg is , ', textMsg);
+
   return (
     <div className="main-container">
       <div className="title">
-        <h1>Socket League Demo (Chat Room)</h1>
+        <h1>Socket League Demo (Chat Rooms)</h1>
       </div>
       <div className="sessionBtns">
-        <button onClick={() => joinSession(0)}>Chat Room 1</button>
-        <button onClick={() => joinSession(1)}>Chat Room 2</button>
-        <button onClick={() => joinSession(2)}>Chat Room 3</button>
-        <button onClick={() => joinSession(3)}>Chat Room 4</button>
-        <span>Session ID is {session_id}</span>
+        <button onClick={() => setSession('0')}>Chat Room 1</button>
+        <button onClick={() => setSession('1')}>Chat Room 2</button>
+        <button onClick={() => setSession('2')}>Chat Room 3</button>
+        <button onClick={() => setSession('3')}>Chat Room 4</button>
       </div>
       <br></br>
       <div className="displayBox">
-        <textarea
-          className="textDisplay"
-          id="echoTextDisplay"
-          value={textMsg.join('\n')}
-        ></textarea>
+        <table>{textMsg}</table>
       </div>
       <br></br>
       <div className="userInputs">
@@ -109,10 +79,8 @@ const App = () => {
           placeholder="what would you have me say?"
           onChange={(e) => (message = e.target.value)}
         ></input>
-        <button onClick={() => sendWebSocketMessage(socketState)}>Send</button>
-        <button onClick={() => sendWebSocketUndoMessage(socketState)}>
-          Undo
-        </button>
+        <button onClick={sendWebSocketMessage}>Send</button>
+        <button onClick={undoSocketState}>Undo</button>
       </div>
     </div>
   );

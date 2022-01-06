@@ -38,7 +38,7 @@ export class Connection {
       this.pendingMessageData = [];
     };
   }
-
+  
   subscribe(session, onMessage, initialState) {
     if (this.subscriptions.has(session)) {
       console.log(
@@ -91,7 +91,7 @@ export const useSyncState = (session, initialState, conn, react) => {
   react.useEffect(() => {
     conn.subscribe(session, handleMessage, initialState);
     return () => conn.unsubscribe(session);
-  }, []);
+  }, [session]);
 
   const setSyncState = (newState) => {
     setState(newState);
