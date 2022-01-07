@@ -1,6 +1,10 @@
 const MockClient = require('../mockClient');
 const { WS } = require('jest-websocket-mock');
 
+/**
+ * Web Socket URI used for testing
+ * @type {string}
+ */
 const WS_URI = 'ws://localhost:3000';
 
 describe('MockClient', () => {
@@ -23,25 +27,25 @@ describe('MockClient', () => {
   it('Sends a message', async () => {
     const client = new MockClient(WS_URI);
     await client.connected;
-    client.send({foo: 'hello'});
-    await expect(server).toReceiveMessage({foo: 'hello'});
+    client.send({ foo: 'hello' });
+    await expect(server).toReceiveMessage({ foo: 'hello' });
   });
 
   it('Receives a message', async () => {
     const client = new MockClient(WS_URI);
     await client.connected;
-    server.send({foo: 'hello'});
-    await expect(client).toReceiveClientMessage({foo: 'hello'});
+    server.send({ foo: 'hello' });
+    await expect(client).toReceiveClientMessage({ foo: 'hello' });
   });
 
   it('Receives multiple messages in order', async () => {
     const client = new MockClient(WS_URI);
     await client.connected;
     for (let i = 0; i < 100; i++) {
-      server.send({i});
+      server.send({ i });
     }
     for (let i = 0; i < 100; i++) {
-      await expect(client).toReceiveClientMessage({i});
+      await expect(client).toReceiveClientMessage({ i });
     }
   });
 });
