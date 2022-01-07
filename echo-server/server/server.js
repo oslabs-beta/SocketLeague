@@ -17,6 +17,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 app.use('/build', express.static(path.resolve(__dirname, '../build')));
+app.use('/assets', express.static(path.resolve(__dirname, '../assets')));
 
 app.get('/', (req, res) => {
   res.sendFile(path.resolve(__dirname, '../index.html'));
@@ -25,6 +26,7 @@ app.get('/', (req, res) => {
 app.get('/bundle.js', (req, res) => {
   res.sendFile(path.resolve(__dirname, '../build/bundle.js'));
 });
+
 
 app.use((req, res) => {
   res.sendStatus(404);
