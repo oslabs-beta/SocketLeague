@@ -18,13 +18,7 @@ describe("WebSocket Server", () => {
   beforeAll(async () => {
     syncState = new SyncHandler(process.env.DB_URI);
     await syncState.connect();
-
-    function handleWsConnection(socket) {
-      socket.on("message", (message) => {
-        syncState.handleState(message, socket);
-      });
-    }
-    wsServer.on("connection", handleWsConnection);
+    wsServer.on("connection", syncState.handleWsConnection);
   });
 
   afterAll(async () => {

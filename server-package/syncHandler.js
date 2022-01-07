@@ -23,9 +23,18 @@ module.exports = class SyncHandler {
     // this.clients = [];
     this.sessions = {};
     this.dbUri = uri;
+    this.handleWsConnection = (socket) =>{
+      console.log("Somebody connected to the websocket server");
+      socket.on("message", (message) => {
+        this.handleState(message, socket);
+      });
+    }
   }
 
-  async connect() {
+  //If no URI is specified, just use the URI specified on initialization
+  //otherwise, set a new URI and connect
+  async connect(uri) {
+    if (uri) this.dbUri = uri;
     await mongoose.connect(this.dbUri, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
@@ -37,8 +46,9 @@ module.exports = class SyncHandler {
   //server sends 'state' and the 'session' only?
   handleState(message, socket) {
     function sendStateUpdate(record, client) {
-      client.send(JSON.stringify({ state: record.state, session: record.session }))
-      // client.send(JSON.stringify(record.state));
+      client.send(
+        JSON.stringify({ state: record.state, session: record.session })
+      );
     }
     //parse the message into a json object
     const stateChange = JSON.parse(message); //message.json(); //stateChange will be an object now
@@ -169,5 +179,7 @@ module.exports = class SyncHandler {
     return db;
   }
 };
+
+
 
 //
