@@ -9,13 +9,19 @@ body {
   font-size: 20px;
   text-align: center;
   overflow: hidden;
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+}
 
+#root {
+  z-index: 1;
+}
+
+.background-gradient {
   background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
   background-size: 400% 400%;
   animation: gradient 30s ease infinite;
   height: 100vh;
-  padding-bottom: 20px;
-  margin-bottom: 20px;
 }
 
 @keyframes gradient {
@@ -29,6 +35,114 @@ body {
     background-position: 0% 50%;
   }
 }
+
+
+
+
+// delight start
+@mixin dots($count) {
+  $text-shadow: ();
+  @for $i from 0 through $count {
+    $text-shadow: $text-shadow,
+                 ((random() - .5) * 3) + em
+                 ((random() - .5) * 3) + em
+                 4px
+                 hsla(random() * 360, 100%, 50%,.9);
+  }
+  text-shadow: $text-shadow;
+}
+
+.background-delight {
+  // display: block;
+  color: transparent;
+  overflow: hidden;
+  background: #123;
+  //z-index: -1;
+}
+
+.background-delight::before, .background-delight::after {
+  font: 5vmin/1.3 Serif;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 3em;
+  height: 3em;
+  content: '☺';
+  mix-blend-mode: screen;
+  animation: 44s -27s move infinite ease-in-out alternate;
+}
+
+
+.background-delight::before {
+  @include dots(40);
+  animation-duration: 44s;
+  animation-delay: -27s;
+}
+
+.background-delight::after {
+  @include dots(40);
+  animation-duration: 43s;
+  animation-delay: -32s;
+}
+
+.background-delight::before {
+  // content: 'DeLight\A A CSS DEMO';
+  //letter-spacing: .5em;
+  text-shadow: 0 0 5px #000;
+  //white-space: pre;
+  // color: #fff;
+  color: rgba(255, 255, 255, 0);
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  text-align: center;
+  color: rgba(153, 153, 153, 0);
+  // color: #999;
+}
+
+.background-delight:first-line {
+  font-size: 300%;
+  font-style: italic;
+  letter-spacing: 0;
+  color: #fff;
+}
+
+@keyframes move {
+  from {
+    transform: rotate(0deg) scale(12) translateX(-20px);
+  }
+  to {
+    transform: rotate(360deg) scale(18) translateX(20px);
+  }
+}
+// delight end
+
+
+// rocketLeague start
+.background-rocketLeague1 {
+  background-image: url("./assets/clip1.gif");
+  background-size: 50%;
+}
+.background-rocketLeague2 {
+  background-image: url("./assets/clip2.gif");
+  background-size: 50%;
+}
+.background-rocketLeague3 {
+  background-image: url("./assets/clip3.gif");
+  background-size: 50%;
+}
+.background-rocketLeague4 {
+  background-image: url("./assets/clip4.gif");
+  background-size: 50%;
+}
+.background-rocketLeague5 {
+  background-image: url("./assets/clip5.gif");
+  background-size: 50%;
+}
+
+
+
 
 div.main-container {
   display: flex;
