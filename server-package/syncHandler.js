@@ -19,26 +19,43 @@ const types = {
 //the schema has to be specified in here too, then
 module.exports = class SyncHandler {
   //method to ask user for URI or have it initialized when the object is created
-  constructor(uri) {
+  constructor(uri, message, socket) {
     // this.clients = [];
     this.sessions = {};
     this.dbUri = uri;
+    this.handleWsConnection = (socket) =>{
+      console.log("Somebody connected to the websocket server");
+      socket.on("message", (message) => {
+        this.handleState(message, socket);
+      });
+    }
   }
 
-  async connect() {
+  //If no URI is specified, just use the URI specified on initialization
+  //otherwise, set a new URI and connect
+  async connect(uri) {
+    if (uri) this.dbUri = uri;
     await mongoose.connect(this.dbUri, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
   }
 
+  // async connect() {
+  //   await mongoose.connect(this.dbUri, {
+  //     useNewUrlParser: true,
+  //     useUnifiedTopology: true,
+  //   });
+  // }
+
   // "{action: undo || update || initial, state: state, session ID}"
   //client sends object with 'action' property and 'state' property
   //server sends 'state' and the 'session' only?
   handleState(message, socket) {
     function sendStateUpdate(record, client) {
-      client.send(JSON.stringify({ state: record.state, session: record.session }))
-      // client.send(JSON.stringify(record.state));
+      client.send(
+        JSON.stringify({ state: record.state, session: record.session })
+      );
     }
     //parse the message into a json object
     const stateChange = JSON.parse(message); //message.json(); //stateChange will be an object now
@@ -169,5 +186,7 @@ module.exports = class SyncHandler {
     return db;
   }
 };
+
+
 
 //
