@@ -19,7 +19,7 @@ const types = {
 //the schema has to be specified in here too, then
 module.exports = class SyncHandler {
   //method to ask user for URI or have it initialized when the object is created
-  constructor(uri, message, socket) {
+  constructor(uri) {
     // this.clients = [];
     this.sessions = {};
     this.dbUri = uri;
