@@ -178,6 +178,10 @@ module.exports = class SyncHandler {
   __getDB() {
     return db;
   }
+
+  close() {
+    mongoose.connection.close();
+  }
 };
 
 

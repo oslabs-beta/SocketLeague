@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "node server/run.js",
     "build": "webpack",
     "test": "jest"
   },
@@ -32,10 +33,6 @@
       "url": "https://github.com/Lzzhengyi"
     }
   ],
-  "jest": {
-    "globalSetup": "./jest-setup.js",
-    "globalTeardown": "./jest-teardown.js"
-  },
   "dependencies": {
     "dotenv": "^10.0.0",
     "react": "^17.0.2",

@@ -26,7 +26,7 @@ const startServer = async () => {
   const wsServer = new ws.Server({ noServer: true });
   wsServer.on('connection', syncState.handleWsConnection);
 
-  const httpServer = app.listen(PORT, () => {});
+  const httpServer = app.listen(PORT, () => {console.log(`Listening on port ${PORT}`)});
   httpServer.on('upgrade', (request, socket, head) => {
     wsServer.handleUpgrade(request, socket, head, (socket) => {
       wsServer.emit('connection', socket, request);
@@ -34,8 +34,7 @@ const startServer = async () => {
   });
 
   await syncState.connect();
-  console.log('ready');
-  return httpServer;
+  return { httpServer, wsServer, syncState };
 };
 
 module.exports = startServer;

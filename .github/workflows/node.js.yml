@@ -20,7 +20,6 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-    - run: '(cd server-package && npm ci)'
-    - run: '(cd server-package && npm test)'
-    - run: '(cd client-package && npm ci)'
-    - run: '(cd client-package && npm test)'
+    - run: '(cd server-package && npm ci && npm test)'
+    - run: '(cd client-package && npm ci && npm test)'
+    - run: '(cd integrated-tests && npm ci && npm run build && npm test)'
