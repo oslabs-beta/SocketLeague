@@ -73,10 +73,6 @@ module.exports = class SyncHandler {
       client.send(
         JSON.stringify({ state: record.state, session: record.session })
       );
-<<<<<<< HEAD
-      // client.send(JSON.stringify(record.state));
-=======
->>>>>>> dev
     }
     //parse the message into a json object
     const stateChange = JSON.parse(message); //message.json(); //stateChange will be an object now
