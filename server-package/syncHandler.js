@@ -41,13 +41,6 @@ module.exports = class SyncHandler {
     });
   }
 
-  // async connect() {
-  //   await mongoose.connect(this.dbUri, {
-  //     useNewUrlParser: true,
-  //     useUnifiedTopology: true,
-  //   });
-  // }
-
   // "{action: undo || update || initial, state: state, session ID}"
   //client sends object with 'action' property and 'state' property
   //server sends 'state' and the 'session' only?
