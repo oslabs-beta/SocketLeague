@@ -21,10 +21,11 @@ A lightweight non-opinionated NPM library that offers a custom React hook that u
 
 ## Installation
 
-## How It works
-
 1. ``npm install socket-league-client`` for access to the custom React hook.
 2. ``npm install socket-league-server`` for access to the websocket server handler.
+
+## How It works
+
 
 ## Demo Apps
 
