@@ -3,6 +3,7 @@ import { useSyncState, Connection } from 'socket-league-client';
 import '../style.scss';
 
 let message = 'hello, I clicked a button!';
+const initialState = '';
 let clipCount = 1;
 
 const conn = new Connection('ws://localhost:3000');
@@ -12,7 +13,7 @@ const App = () => {
 
   const [socketState, setSocketState, undoSocketState] = useSyncState(
     session,
-    '',
+    initialState,
     conn,
     React
   );

@@ -6,9 +6,9 @@ const path = require("path");
 const SyncHandler = require("socket-league-server");
 
 //initialize syncState with the URI of the database where the state is stored
-console.log("Confirm SyncHandler Server Import: ", SyncHandler);
-const syncState = new SyncHandler.SyncHandler(process.env.DB_URI);
-syncState.connect();
+// console.log("Confirm SyncHandler Server Import: ", SyncHandler);
+// const syncState = new SyncHandler.SyncHandler(process.env.DB_URI);
+// syncState.connect();
 
 const PORT = 3000;
 
@@ -40,6 +40,9 @@ app.use((err, req, res, next) => {
 const wsServer = new ws.Server({ noServer: true });
 
 //we specify that when the connection state is reached by the websocket server, we will invoke handleWsConnection (see function above)
+//process.env.DB_URI should be the URI for the database
+const syncState = new SyncHandler.SyncHandler(process.env.DB_URI);
+syncState.connect();
 wsServer.on("connection", syncState.handleWsConnection);
 
 httpServer = app.listen(PORT, () => console.log(`Listening on PORT: ${PORT}`));
