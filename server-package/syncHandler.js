@@ -1,7 +1,11 @@
+/**
+ * @file synchandler.js contains the SyncHandler Class that is being exported into the index.js file
+ */
+
 //temporary: directly database into the websocket server
-const db = require("./models/clientModel.js");
+const db = require('./models/clientModel.js');
 // import db from "./models/clientModel.js";
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 //eventually we need to export stuff
 
@@ -9,16 +13,26 @@ const mongoose = require("mongoose");
 //store the state in here
 
 //refactor by making it its own file
+/**
+ * Object containing all the action types that we can expect in the message received by the client
+ * @type {object}
+ */
 const types = {
-  UPDATE: "update",
-  INITIAL: "initial",
-  UNDO: "undo",
-  REDO: "redo",
+  UPDATE: 'update',
+  INITIAL: 'initial',
+  UNDO: 'undo',
+  REDO: 'redo',
 };
 
 //the schema has to be specified in here too, then
+
+/**
+ * SyncHandler
+ */
 module.exports = class SyncHandler {
-  //method to ask user for URI or have it initialized when the object is created
+  /**
+   * @param {string} uri The uri is used to connect to the users DB. This input URI should be secured by the user using something like dotenv
+   */
   constructor(uri) {
     // this.clients = [];
     this.sessions = {};
@@ -33,6 +47,10 @@ module.exports = class SyncHandler {
 
   //If no URI is specified, just use the URI specified on initialization
   //otherwise, set a new URI and connect
+
+  /**
+   * @property {Function} connect Connect to the users provided URI
+   */
   async connect(uri) {
     if (uri) this.dbUri = uri;
     await mongoose.connect(this.dbUri, {
@@ -44,6 +62,12 @@ module.exports = class SyncHandler {
   // "{action: undo || update || initial, state: state, session ID}"
   //client sends object with 'action' property and 'state' property
   //server sends 'state' and the 'session' only?
+
+  /**
+   * @property {Function} handleState Primary function that handles all state changes includeing the initial state and any update/undo state changes
+   * @param {*} message This is a JSON stringify object containing action, state, and session
+   * @param {*} socket This is the web socket the function is connected to
+   */
   handleState(message, socket) {
     function sendStateUpdate(record, client) {
       client.send(
@@ -60,7 +84,7 @@ module.exports = class SyncHandler {
             If the session ID does not exist, a new one is created and a new database entry is also created.
             Only clients with the right session ID receive updates
       */
-    if (stateChange.action === "initial") {
+    if (stateChange.action === 'initial') {
       console.log(`Got an initial message: ${message}`);
       db.find({ session: stateChange.session }).then((data) => {
         if (data.length > 0) {
@@ -87,7 +111,7 @@ module.exports = class SyncHandler {
               }
             })
             .catch((err) => {
-              console.log("Error in create initial", err);
+              console.log('Error in create initial', err);
             });
         }
       });
@@ -98,7 +122,7 @@ module.exports = class SyncHandler {
           If there is an 'update' action, Create new state in the database.
           Find all the clients that are sharing the same session ID, and update their current to the new state. 
       */
-    if (stateChange.action === "update") {
+    if (stateChange.action === 'update') {
       // console.log(`Got an update message:`);
       console.log(`Got an update message: ${message}`);
       //add new messages to the list of all messages
@@ -116,12 +140,12 @@ module.exports = class SyncHandler {
                 );
               })
               .catch((err) => {
-                console.log("Error in finding session", err);
+                console.log('Error in finding session', err);
               });
           }
         })
         .catch((err) => {
-          console.log("Error in update", err);
+          console.log('Error in update', err);
         });
     }
 
@@ -130,7 +154,7 @@ module.exports = class SyncHandler {
             If the stateChange action is 'undo', we apply method findOneAndDelete. This will search for the latest state stored in the
             database and delete it. The last record before the one deleted will be sent out to all clients and become the current state.
       */
-    if (stateChange.action === "undo") {
+    if (stateChange.action === 'undo') {
       console.log(`Got an undo message: ${message}`);
       db.find({ session: stateChange.session })
         .then((data) => {
@@ -138,7 +162,7 @@ module.exports = class SyncHandler {
             // console.log(data[data.length - 1]._id, " will be deleted.");
             db.findOneAndDelete({ _id: data[data.length - 1]._id }).then(
               (data) => {
-                console.log(data._id, "was deleted");
+                console.log(data._id, 'was deleted');
                 for (const client of this.sessions[stateChange.session]) {
                   //TODO: error handle for if the array is empty later
                   db.find({ session: stateChange.session })
@@ -149,7 +173,7 @@ module.exports = class SyncHandler {
                       );
                     })
                     .catch((err) => {
-                      console.log("Error in finding session for undo", err);
+                      console.log('Error in finding session for undo', err);
                     });
                 }
               }
@@ -157,7 +181,7 @@ module.exports = class SyncHandler {
           }
         })
         .catch((err) => {
-          console.log("Error in undo", err);
+          console.log('Error in undo', err);
         });
     }
 
@@ -166,15 +190,21 @@ module.exports = class SyncHandler {
           If the stateChange action is 'redo', the recently deleted or undone state will be reverted. This reverted state will then
           be sent to all clients and their current state will also be the reverted state.
       */
-    if (stateChange.action === "redo") {
+    if (stateChange.action === 'redo') {
     }
   }
+  /**
+   * @property {Function} clearState ClearState is used for testing purposes to clear out the test db before running
+   */
   async clearState() {
     const sessionRecords = await db.find();
     if (sessionRecords.length) {
       await db.collection.drop();
     }
   }
+  /**
+   * @property {function} __getDB getDB is a method to return the entire DB ()
+   */
   __getDB() {
     return db;
   }

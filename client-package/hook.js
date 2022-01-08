@@ -5,6 +5,9 @@ const types = {
   REDO: 'redo',
 };
 
+/**
+ * Place holder text for connection class
+ */
 export class Connection {
   constructor(url) {
     this.socket = new WebSocket(url);
@@ -38,7 +41,13 @@ export class Connection {
       this.pendingMessageData = [];
     };
   }
-  
+
+  /**
+   * @property {Function} subscribe
+   * @param {*} session placeholder text description
+   * @param {*} onMessage placeholder text description
+   * @param {*} initialState placeholder text description
+   */
   subscribe(session, onMessage, initialState) {
     if (this.subscriptions.has(session)) {
       console.log(
@@ -51,6 +60,11 @@ export class Connection {
     this._publish({ action, state, session });
   }
 
+  /**
+   * @property {Function} unsubscribe
+   * @param {*} session placeholder text description
+   * @returns placeholder text description
+   */
   unsubscribe(session) {
     if (!this.subscriptions.has(session)) {
       console.log(
@@ -61,6 +75,10 @@ export class Connection {
     this.subscriptions.delete(session);
   }
 
+  /**
+   * @property {Function} sendUndo
+   * @param {*} session placeholder text description
+   */
   sendUndo(session) {
     const action = types.UNDO;
     this._publish({ action, session });
@@ -82,6 +100,14 @@ export class Connection {
   }
 }
 
+/**
+ * placeholder text description
+ * @param {*} session placeholder text description
+ * @param {*} initialState placeholder text description
+ * @param {*} conn placeholder text description
+ * @param {*} react placeholder text description
+ * @returns placeholder text description
+ */
 export const useSyncState = (session, initialState, conn, react) => {
   const [state, setState] = react.useState(initialState);
   const handleMessage = (message) => {
