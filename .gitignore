@@ -105,3 +105,9 @@ dist
 
 # Dist
 build/
+
+# Docs folder
+docs/
+
+# Electron release
+release/

@@ -29,7 +29,7 @@ const types = {
 /**
  * SyncHandler
  */
-module.exports = class SyncHandler {
+class SyncHandler {
   /**
    * @param {string} uri The uri is used to connect to the users DB. This input URI should be secured by the user using something like dotenv
    */
@@ -37,12 +37,12 @@ module.exports = class SyncHandler {
     // this.clients = [];
     this.sessions = {};
     this.dbUri = uri;
-    this.handleWsConnection = (socket) =>{
-      console.log("Somebody connected to the websocket server");
-      socket.on("message", (message) => {
+    this.handleWsConnection = (socket) => {
+      console.log('Somebody connected to the websocket server');
+      socket.on('message', (message) => {
         this.handleState(message, socket);
       });
-    }
+    };
   }
 
   //If no URI is specified, just use the URI specified on initialization
@@ -212,8 +212,6 @@ module.exports = class SyncHandler {
   close() {
     mongoose.connection.close();
   }
-};
+}
 
-
-
-//
+module.exports = SyncHandler;

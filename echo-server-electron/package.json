@@ -1,0 +1,117 @@
+{
+  "name": "socketleague",
+  "version": "1.0.0",
+  "description": "Websockets that transfer synced state",
+  "main": "main.js",
+  "scripts": {
+    "start": "cross-env NODE_ENV=production nodemon server/server.js",
+    "build": "cross-env NODE_ENV=production webpack",
+    "dev": "concurrently \"cross-env NODE_ENV=development webpack serve\" \"cross-env NODE_ENV=development nodemon server/server.js\"",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "electron": "concurrently \"cross-env NODE_ENV=production nodemon server/server.js\" \"electron .\"",
+    "pack": "npm run build && electron-builder --dir",
+    "dist": "npm run build && electron-builder",
+    "dist-all": "npm run build && electron-builder -mwl"
+  },
+  "build": {
+    "npmRebuild": false,
+    "productName": "Socket League",
+    "extends": null,
+    "files": [
+      "main.js",
+      "index.html",
+      "build/main.css",
+      "build/bundle.js",
+      "./assets/clip1.gif",
+      "./assets/clip2.gif",
+      "./assets/clip3.gif",
+      "./assets/clip4.gif",
+      "./assets/clip5.gif"
+    ],
+    "nodeVersion": "current",
+    "nsis": {
+      "createDesktopShortcut": "always"
+    },
+    "dmg": {
+      "contents": [
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
+    },
+    "mac": {
+      "category": "your.app.category.type"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "linux": {
+      "target": [
+        "deb",
+        "snap"
+      ],
+      "category": "Development"
+    },
+    "directories": {
+      "buildResources": "build",
+      "output": "release"
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "open-source-labs",
+      "repo": "Socket League",
+      "private": false
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oslabs-beta/SocketLeague.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/oslabs-beta/SocketLeague/issues"
+  },
+  "homepage": "https://github.com/oslabs-beta/SocketLeague#readme",
+  "devDependencies": {
+    "@babel/core": "^7.16.5",
+    "@babel/preset-env": "^7.16.5",
+    "@babel/preset-react": "^7.16.5",
+    "babel-loader": "^8.2.3",
+    "concurrently": "^6.5.1",
+    "cross-env": "^7.0.3",
+    "css-loader": "^6.5.1",
+    "dotenv": "^10.0.0",
+    "electron": "^16.0.6",
+    "electron-builder": "^22.14.5",
+    "html-webpack-plugin": "^5.5.0",
+    "jest": "^27.4.5",
+    "mini-css-extract-plugin": "^2.4.6",
+    "nodemon": "^2.0.15",
+    "sass": "^1.46.0",
+    "sass-loader": "^12.4.0",
+    "scss-loader": "^0.0.1",
+    "style-loader": "^3.3.1",
+    "webpack": "^5.65.0",
+    "webpack-cli": "^4.9.1",
+    "webpack-dev-server": "^4.7.1"
+  },
+  "dependencies": {
+    "cookie-parser": "^1.4.6",
+    "express": "^4.17.2",
+    "mongoose": "^6.1.4",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "socket-league-client": "file:../client-package",
+    "socket-league-server": "file:../server-package",
+    "ws": "^8.4.0"
+  }
+}

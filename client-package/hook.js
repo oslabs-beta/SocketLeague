@@ -1,3 +1,8 @@
+/**
+ * @file This file contains the connection class and the useSyncState function.
+ * To use these features a user should import socket-league-client. See README.md for more info.
+ */
+
 const types = {
   UPDATE: 'update',
   INITIAL: 'initial',
@@ -6,7 +11,7 @@ const types = {
 };
 
 /**
- * Place holder text for connection class
+ * The connection class handles the websocket connection
  */
 export class Connection {
   constructor(url) {
@@ -44,9 +49,9 @@ export class Connection {
 
   /**
    * @property {Function} subscribe
-   * @param {*} session placeholder text description
+   * @param {*} session This is the session id that clients subscribe to
    * @param {*} onMessage placeholder text description
-   * @param {*} initialState placeholder text description
+   * @param {*} initialState This is the initial state that the client is given when they subscribe to a session
    */
   subscribe(session, onMessage, initialState) {
     if (this.subscriptions.has(session)) {
@@ -62,8 +67,7 @@ export class Connection {
 
   /**
    * @property {Function} unsubscribe
-   * @param {*} session placeholder text description
-   * @returns placeholder text description
+   * @param {*} session This is the session id that clients subscribe to
    */
   unsubscribe(session) {
     if (!this.subscriptions.has(session)) {
@@ -77,19 +81,28 @@ export class Connection {
 
   /**
    * @property {Function} sendUndo
-   * @param {*} session placeholder text description
+   * @param {*} session This is the session id that clients are subscribed to
    */
   sendUndo(session) {
     const action = types.UNDO;
     this._publish({ action, session });
   }
 
+  /**
+   * @property {Function} sendUpdate
+   * @param {*} session This is the session id
+   * @param {*} newState This is the new state that the client passes in
+   */
   sendUpdate(session, newState) {
     const action = types.UPDATE;
     const state = newState;
     this._publish({ action, state, session });
   }
 
+  /**
+   * @property {Function} _publish
+   * @param {Object} message This is an object sent by the client that is being stringified and sent through the web socket
+   */
   _publish(message) {
     const data = JSON.stringify(message);
     if (this.socket.readyState === WebSocket.OPEN) {
@@ -101,12 +114,12 @@ export class Connection {
 }
 
 /**
- * placeholder text description
- * @param {*} session placeholder text description
- * @param {*} initialState placeholder text description
- * @param {*} conn placeholder text description
- * @param {*} react placeholder text description
- * @returns placeholder text description
+ * Custom React hook that will be called on the client
+ * @param {*} session This is the session id that the client is subscribed to
+ * @param {*} initialState This is the initialState that the hook initializes
+ * @param {*} conn This is the connection to the web socket
+ * @param {*} react This is to specify which react to use
+ * @returns The state, the setsyncstate function and the undo function
  */
 export const useSyncState = (session, initialState, conn, react) => {
   const [state, setState] = react.useState(initialState);
