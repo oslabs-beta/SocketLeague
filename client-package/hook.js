@@ -24,6 +24,7 @@ export class Connection {
     this.sendUpdate = this.sendUpdate.bind(this);
     this.sendUndo = this.sendUndo.bind(this);
     this._publish = this._publish.bind(this);
+    this._canResubscribe = false;
 
     this.pendingMessageData = [];
 
@@ -45,11 +46,14 @@ export class Connection {
      * This is called on initial connection to the server and on reconnecting using ReconnectingWebSocket 
     */
     this.socket.onopen = () => {
-      this.resubscribe();
+      if (this._canResubscribe) this.resubscribe();
       for (const data of this.pendingMessageData) {
         this.socket.send(data);
       }
       this.pendingMessageData = [];
+    };
+    this.socket.onclose = () => {
+      this._canResubscribe = true;
     };
   }
 
@@ -135,6 +139,13 @@ export class Connection {
     } else {
       this.pendingMessageData.push(data);
     }
+  }
+    /**
+   * @property {Function} close
+   * Close the ReconnectingWebSocket
+   */
+  close() {
+    this.socket.close();
   }
 }
 
