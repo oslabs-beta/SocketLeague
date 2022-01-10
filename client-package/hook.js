@@ -91,12 +91,13 @@ export class Connection {
   /**
    * @property {Function} sendUpdate
    * @param {*} session This is the session id
+   * @param {*} oldState This is the previous state from before the update
    * @param {*} newState This is the new state that the client passes in
    */
-  sendUpdate(session, newState) {
+  sendUpdate(session, oldState, newState) {
     const action = types.UPDATE;
     const state = newState;
-    this._publish({ action, state, session });
+    this._publish({ action, state, oldState, session });
   }
 
   /**
@@ -133,8 +134,9 @@ export const useSyncState = (session, initialState, conn, react) => {
   }, [session]);
 
   const setSyncState = (newState) => {
+    const oldState = state;
     setState(newState);
-    conn.sendUpdate(session, newState);
+    conn.sendUpdate(session, oldState, newState);
   };
 
   const undo = () => {

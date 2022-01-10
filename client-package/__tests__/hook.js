@@ -58,9 +58,10 @@ describe('Connection', () => {
   it('Sends an update to the server', async () => {
     const conn = new Connection(WS_URI);
     await server.connected;
-    conn.sendUpdate('0', 'hello');
+    conn.sendUpdate('0', 'old', 'hello');
     await expect(server).toReceiveMessage({
       action: 'update',
+      oldState: 'old',
       state: 'hello',
       session: '0',
     });
@@ -186,6 +187,7 @@ describe('useSyncState', () => {
     await expect(server).toReceiveMessage({
       action: 'update',
       state: 'bye',
+      oldState: 'hello',
       session: '0',
     });
   })
