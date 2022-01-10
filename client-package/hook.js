@@ -1,3 +1,5 @@
+import ReconnectingWebSocket from 'reconnecting-websocket'
+
 /**
  * @file This file contains the connection class and the useSyncState function.
  * To use these features a user should import socket-league-client. See README.md for more info.
@@ -15,13 +17,14 @@ const types = {
  */
 export class Connection {
   constructor(url) {
-    this.socket = new WebSocket(url);
+    this.socket = new ReconnectingWebSocket(url);
 
     this.subscribe = this.subscribe.bind(this);
     this.unsubscribe = this.unsubscribe.bind(this);
     this.sendUpdate = this.sendUpdate.bind(this);
     this.sendUndo = this.sendUndo.bind(this);
     this._publish = this._publish.bind(this);
+    this._canResubscribe = false;
 
     this.pendingMessageData = [];
 
@@ -39,11 +42,18 @@ export class Connection {
       callback(state);
     });
 
+    /** 
+     * This is called on initial connection to the server and on reconnecting using ReconnectingWebSocket 
+    */
     this.socket.onopen = () => {
+      if (this._canResubscribe) this.resubscribe();
       for (const data of this.pendingMessageData) {
         this.socket.send(data);
       }
       this.pendingMessageData = [];
+    };
+    this.socket.onclose = () => {
+      this._canResubscribe = true;
     };
   }
 
@@ -80,6 +90,24 @@ export class Connection {
   }
 
   /**
+   * @property {Function} resubscribe 
+   * This method is called to try to reestablish any stored sessions in the client upon connection to the server
+   * 
+   */
+
+  resubscribe() {
+    console.log('attempting resubscribe with ',this.subscriptions)
+    if (this.subscriptions.size > 0){
+      this.subscriptions.forEach((hook, session) => {
+        const action = types.INITIAL;
+        const state = '';
+        this._publish({ action, state, session });
+      })
+    }
+
+  }
+
+  /**
    * @property {Function} sendUndo
    * @param {*} session This is the session id that clients are subscribed to
    */
@@ -111,6 +139,13 @@ export class Connection {
     } else {
       this.pendingMessageData.push(data);
     }
+  }
+    /**
+   * @property {Function} close
+   * Close the ReconnectingWebSocket
+   */
+  close() {
+    this.socket.close();
   }
 }
 

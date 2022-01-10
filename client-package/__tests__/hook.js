@@ -41,22 +41,24 @@ class MessageListener {
 
 describe('Connection', () => {
   let server;
+  let conn;
 
   beforeEach(() => {
     server = new WS(WS_URI, { jsonProtocol: true });
   });
 
   afterEach(() => {
+    conn.close();
     WS.clean();
   });
 
   it('Connects to the server', async () => {
-    new Connection(WS_URI);
+    conn = new Connection(WS_URI);
     await server.connected;
   });
 
   it('Sends an update to the server', async () => {
-    const conn = new Connection(WS_URI);
+    conn = new Connection(WS_URI);
     await server.connected;
     conn.sendUpdate('0', 'old', 'hello');
     await expect(server).toReceiveMessage({
@@ -68,7 +70,7 @@ describe('Connection', () => {
   });
 
   it('Subscribes to the server', async () => {
-    const conn = new Connection(WS_URI);
+    conn = new Connection(WS_URI);
     await server.connected;
     conn.subscribe('0', () => {}, 'hello');
     await expect(server).toReceiveMessage({
@@ -79,7 +81,7 @@ describe('Connection', () => {
   });
 
   it('Gets updates from the server', async () => {
-    const conn = new Connection(WS_URI);
+    conn = new Connection(WS_URI);
     await server.connected;
     let handlerResolve;
     const handler = new Promise(resolve => { handlerResolve = resolve });
@@ -93,7 +95,7 @@ describe('Connection', () => {
   });
 
   it('Sends an undo message', async() => {
-    const conn = new Connection(WS_URI);
+    conn = new Connection(WS_URI);
     await server.connected;
     conn.sendUndo('0');
     await expect(server).toReceiveMessage({
@@ -103,7 +105,7 @@ describe('Connection', () => {
   });
 
   it('Routes updates from server to the correct session', async () => {
-    const conn = new Connection(WS_URI);
+    conn = new Connection(WS_URI);
     await server.connected;
 
     const listenerOdd = new MessageListener();
@@ -167,6 +169,7 @@ describe('useSyncState', () => {
   });
 
   afterEach(() => {
+    conn.close(); //if you don't close the client first, you leave open handles that linger after the test suites complete
     WS.clean();
   });
 
@@ -217,6 +220,7 @@ describe('useSyncState', () => {
     useSyncState('0', 'junk', conn, react);
     const react2 = mockReact();
     useSyncState('1', 'junk', conn, react2);
+    await server.connected;
     server.send({
       state: 'val0',
       session: '0',
