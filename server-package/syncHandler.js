@@ -69,6 +69,16 @@ class SyncHandler {
    * @param {*} socket This is the web socket the function is connected to
    */
   handleState(message, socket) {
+
+    function createNewSession(sessions, stateChange){
+      console.log('initializing session '+stateChange.session)
+      if (sessions[stateChange.session]) {
+      } else {
+        sessions[stateChange.session] = new Set();
+      }
+      sessions[stateChange.session].add(socket);
+    }
+
     function sendStateUpdate(record, client) {
       client.send(
         JSON.stringify({ state: record.state, session: record.session })
@@ -88,24 +98,14 @@ class SyncHandler {
       console.log(`Got an initial message: ${message}`);
       db.find({ session: stateChange.session }).then((data) => {
         if (data.length > 0) {
-          if (this.sessions[stateChange.session]) {
-            this.sessions[stateChange.session].add(socket);
-          } else {
-            this.sessions[stateChange.session] = new Set();
-            this.sessions[stateChange.session].add(socket);
-          }
+          createNewSession(this.sessions,stateChange);
           for (const client of this.sessions[stateChange.session]) {
             sendStateUpdate(data[data.length - 1], client);
           }
         } else {
           db.create({ session: stateChange.session, state: stateChange.state })
             .then((data) => {
-              if (this.sessions[stateChange.session]) {
-                this.sessions[stateChange.session].add(socket);
-              } else {
-                this.sessions[stateChange.session] = new Set();
-                this.sessions[stateChange.session].add(socket);
-              }
+              createNewSession(this.sessions,stateChange);
               for (const client of this.sessions[stateChange.session]) {
                 sendStateUpdate(data, client);
               }

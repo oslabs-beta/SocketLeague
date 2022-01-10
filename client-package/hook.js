@@ -1,3 +1,5 @@
+import ReconnectingWebSocket from 'reconnecting-websocket'
+
 /**
  * @file This file contains the connection class and the useSyncState function.
  * To use these features a user should import socket-league-client. See README.md for more info.
@@ -15,7 +17,7 @@ const types = {
  */
 export class Connection {
   constructor(url) {
-    this.socket = new WebSocket(url);
+    this.socket = new ReconnectingWebSocket(url);
 
     this.subscribe = this.subscribe.bind(this);
     this.unsubscribe = this.unsubscribe.bind(this);
@@ -39,7 +41,11 @@ export class Connection {
       callback(state);
     });
 
+    /** 
+     * This is called on initial connection to the server and on reconnecting using ReconnectingWebSocket 
+    */
     this.socket.onopen = () => {
+      this.resubscribe();
       for (const data of this.pendingMessageData) {
         this.socket.send(data);
       }
@@ -77,6 +83,24 @@ export class Connection {
       return;
     }
     this.subscriptions.delete(session);
+  }
+
+  /**
+   * @property {Function} resubscribe 
+   * This method is called to try to reestablish any stored sessions in the client upon connection to the server
+   * 
+   */
+
+  resubscribe() {
+    console.log('attempting resubscribe with ',this.subscriptions)
+    if (this.subscriptions.size > 0){
+      this.subscriptions.forEach((hook, session) => {
+        const action = types.INITIAL;
+        const state = '';
+        this._publish({ action, state, session });
+      })
+    }
+
   }
 
   /**

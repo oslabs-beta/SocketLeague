@@ -40,7 +40,8 @@
     "jsdoc": "^3.6.7",
     "mock-socket": "^9.0.8",
     "mongoose": "^6.1.4",
-    "react": "^17.0.2"
+    "react": "^17.0.2",
+    "reconnecting-websocket": "^4.4.0"
   },
   "dependencies": {
     "ws": "^8.4.0"
