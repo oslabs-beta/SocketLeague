@@ -281,5 +281,45 @@ describe("WebSocket Server", () => {
       await expect(client).toReceiveClientMessage({session:'0', state:'first update'});
     }
   }, 10000);
+
+  it('Uses custom state update mergers', async () => {
+    await syncState.clearState();
+    syncState.merger.registerHandler('counter', (serverState, oldState, newState) => serverState + newState - oldState);
+
+    const client1 = new MockClient(WS_URI);
+    const client2 = new MockClient(WS_URI);
+    await client1.connected;
+    await client2.connected;
+
+    client1.send({
+      state: 0,
+      action: 'initial',
+      session: 'counter',
+    });
+    await client1.nextMessage;
+    
+    client2.send({
+      state: 0,
+      action: 'initial',
+      session: 'counter',
+    });
+    await client1.nextMessage;
+
+    client1.send({
+      state: 1,
+      oldState: 0,
+      action: 'update',
+      session: 'counter',
+    })
+    await expect(client1).toReceiveClientMessage({session: 'counter', state: 1});
+
+    client2.send({
+      state: 1,
+      oldState: 0,
+      action: 'update',
+      session: 'counter',
+    })
+    await expect(client1).toReceiveClientMessage({session: 'counter', state: 2});
+  });
 });
 
