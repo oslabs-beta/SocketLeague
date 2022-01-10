@@ -4,6 +4,7 @@
 
 //temporary: directly database into the websocket server
 const db = require('./models/clientModel.js');
+const StateMerger = require('./merger');
 // import db from "./models/clientModel.js";
 const mongoose = require('mongoose');
 
@@ -37,6 +38,7 @@ class SyncHandler {
     // this.clients = [];
     this.sessions = {};
     this.dbUri = uri;
+    this.merger = new StateMerger();
     this.handleWsConnection = (socket) => {
       console.log('Somebody connected to the websocket server');
       socket.on('message', (message) => {
@@ -68,7 +70,7 @@ class SyncHandler {
    * @param {*} message This is a JSON stringify object containing action, state, and session
    * @param {*} socket This is the web socket the function is connected to
    */
-  handleState(message, socket) {
+  async handleState(message, socket) {
 
     function createNewSession(sessions, stateChange){
       console.log('initializing session '+stateChange.session)
@@ -78,7 +80,6 @@ class SyncHandler {
       }
       sessions[stateChange.session].add(socket);
     }
-
     function sendStateUpdate(record, client) {
       client.send(
         JSON.stringify({ state: record.state, session: record.session })
@@ -125,9 +126,12 @@ class SyncHandler {
     if (stateChange.action === 'update') {
       // console.log(`Got an update message:`);
       console.log(`Got an update message: ${message}`);
+      const { oldState, state, session } = stateChange;
+      const serverState = (await this.latestRecord(session)).state;
+      const mergedState = this.merger.merge(session, serverState, oldState, state);
       //add new messages to the list of all messages
       //we need this to create a new entry
-      db.create({ session: stateChange.session, state: stateChange.state })
+      db.create({ session: stateChange.session, state: mergedState })
         .then((data) => {
           //redundant because we have the record we just added but search the database for the latest record anyway
           //logic for sending updated state to clients needs refactoring
@@ -193,6 +197,17 @@ class SyncHandler {
     if (stateChange.action === 'redo') {
     }
   }
+
+  async latestRecord(session) {
+    try {
+      const records = await db.find({ session });
+      return records[records.length - 1];
+    }
+    catch(err) {
+      console.log('Error in finding session', err);
+    }
+  }
+
   /**
    * @property {Function} clearState ClearState is used for testing purposes to clear out the test db before running
    */
