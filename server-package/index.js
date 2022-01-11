@@ -1,2 +1,3 @@
-const  SyncHandler  = require('./syncHandler.js');
-module.exports = { SyncHandler }
+const SyncHandler = require('./syncHandler.js');
+const MongoDriver = require('./mongoDriver.js');
+module.exports = { SyncHandler, MongoDriver };

@@ -6,7 +6,7 @@ const process = require('process');
 const express = require('express');
 const ws = require('ws');
 
-const { SyncHandler } = require('socket-league-server');
+const { SyncHandler, MongoDriver } = require('socket-league-server');
 
 
 const PORT = 3000;
@@ -21,7 +21,7 @@ const startServer = async () => {
     res.sendFile(path.resolve(__dirname, '../build/bundle.js'));
   });
 
-  syncState = new SyncHandler(process.env.DB_URI);
+  syncState = new SyncHandler(new MongoDriver(process.env.DB_URI));
 
   const wsServer = new ws.Server({ noServer: true });
   wsServer.on('connection', syncState.handleWsConnection);
