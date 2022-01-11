@@ -3,10 +3,10 @@
  */
 
 //temporary: directly database into the websocket server
-const db = require('./models/clientModel.js');
+// const db = require('./models/clientModel.js');
 const StateMerger = require('./merger');
 // import db from "./models/clientModel.js";
-const mongoose = require('mongoose');
+// const mongoose = require('mongoose');
 
 //eventually we need to export stuff
 
@@ -28,16 +28,29 @@ const types = {
 //the schema has to be specified in here too, then
 
 /**
- * SyncHandler
+ * @class SyncHandler
  */
 class SyncHandler {
+  // constructor(uri) {
+  //   // this.clients = [];
+  //   this.sessions = {};
+  //   this.dbUri = uri;
+  //   this.merger = new StateMerger();
+  //   this.handleWsConnection = (socket) => {
+  //     console.log('Somebody connected to the websocket server');
+  //     socket.on('message', (message) => {
+  //       this.handleState(message, socket);
+  //     });
+  //   };
+  // }
+
   /**
-   * @param {string} uri The uri is used to connect to the users DB. This input URI should be secured by the user using something like dotenv
+   * @param db
    */
-  constructor(uri) {
+  constructor(db) {
     // this.clients = [];
     this.sessions = {};
-    this.dbUri = uri;
+    this.db = db;
     this.merger = new StateMerger();
     this.handleWsConnection = (socket) => {
       console.log('Somebody connected to the websocket server');
@@ -50,15 +63,14 @@ class SyncHandler {
   //If no URI is specified, just use the URI specified on initialization
   //otherwise, set a new URI and connect
 
+  //TODO: Refactor the below to make it DB agnostic
+
   /**
    * @property {Function} connect Connect to the users provided URI
+   *
    */
-  async connect(uri) {
-    if (uri) this.dbUri = uri;
-    await mongoose.connect(this.dbUri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+  async connect() {
+    await this.db.connect();
   }
 
   // "{action: undo || update || initial, state: state, session ID}"
@@ -71,9 +83,8 @@ class SyncHandler {
    * @param {*} socket This is the web socket the function is connected to
    */
   async handleState(message, socket) {
-
-    function createNewSession(sessions, stateChange){
-      console.log('initializing session '+stateChange.session)
+    function createNewSession(sessions, stateChange) {
+      console.log('initializing session ' + stateChange.session);
       if (sessions[stateChange.session]) {
       } else {
         sessions[stateChange.session] = new Set();
@@ -97,25 +108,49 @@ class SyncHandler {
       */
     if (stateChange.action === 'initial') {
       console.log(`Got an initial message: ${message}`);
-      db.find({ session: stateChange.session }).then((data) => {
-        if (data.length > 0) {
-          createNewSession(this.sessions,stateChange);
-          for (const client of this.sessions[stateChange.session]) {
-            sendStateUpdate(data[data.length - 1], client);
+      try {
+        this.db.getLatestSessionRecord(stateChange.session).then((data) => {
+          if (data) {
+            createNewSession(this.sessions, stateChange);
+            for (const client of this.sessions[stateChange.session]) {
+              sendStateUpdate(data, client);
+            }
+          } else {
+            this.db
+              .createSessionRecord(stateChange.session, stateChange.state)
+              .then((data) => {
+                createNewSession(this.sessions, stateChange);
+                for (const client of this.sessions[stateChange.session]) {
+                  sendStateUpdate(data, client);
+                }
+              })
+              .catch((err) => {
+                console.log('Error in create initial', err);
+              });
           }
-        } else {
-          db.create({ session: stateChange.session, state: stateChange.state })
-            .then((data) => {
-              createNewSession(this.sessions,stateChange);
-              for (const client of this.sessions[stateChange.session]) {
-                sendStateUpdate(data, client);
-              }
-            })
-            .catch((err) => {
-              console.log('Error in create initial', err);
-            });
-        }
-      });
+        });
+      } catch (err) {
+        console.log('Error in initial', err);
+      }
+      // db.find({ session: stateChange.session }).then((data) => {
+      //   if (data.length > 0) {
+      //     createNewSession(this.sessions,stateChange);
+      //     for (const client of this.sessions[stateChange.session]) {
+      //       sendStateUpdate(data[data.length - 1], client);
+      //     }
+      //   } else {
+      //     db.create({ session: stateChange.session, state: stateChange.state })
+      //       .then((data) => {
+      //         createNewSession(this.sessions,stateChange);
+      //         for (const client of this.sessions[stateChange.session]) {
+      //           sendStateUpdate(data, client);
+      //         }
+      //       })
+      //       .catch((err) => {
+      //         console.log('Error in create initial', err);
+      //       });
+      //   }
+      // });
     }
 
     /*  UPDATE:
@@ -126,31 +161,45 @@ class SyncHandler {
     if (stateChange.action === 'update') {
       // console.log(`Got an update message:`);
       console.log(`Got an update message: ${message}`);
-      const { oldState, state, session } = stateChange;
-      const serverState = (await this.latestRecord(session)).state;
-      const mergedState = this.merger.merge(session, serverState, oldState, state);
+      try {
+        const { oldState, state, session } = stateChange;
+        const serverState = (await this.db.getLatestSessionRecord(session))
+          .state;
+        const mergedState = this.merger.merge(
+          session,
+          serverState,
+          oldState,
+          state
+        );
+        const record = await this.db.createSessionRecord(session, mergedState);
+        for (const client of this.sessions[session]) {
+          sendStateUpdate(record, client);
+        }
+      } catch (err) {
+        console.log('Error in update', err);
+      }
       //add new messages to the list of all messages
       //we need this to create a new entry
-      db.create({ session: stateChange.session, state: mergedState })
-        .then((data) => {
-          //redundant because we have the record we just added but search the database for the latest record anyway
-          //logic for sending updated state to clients needs refactoring
-          for (const client of this.sessions[stateChange.session]) {
-            db.find({ session: stateChange.session })
-              .then((sessionRecords) => {
-                sendStateUpdate(
-                  sessionRecords[sessionRecords.length - 1],
-                  client
-                );
-              })
-              .catch((err) => {
-                console.log('Error in finding session', err);
-              });
-          }
-        })
-        .catch((err) => {
-          console.log('Error in update', err);
-        });
+      //db.create({ session: stateChange.session, state: mergedState })
+      //  .then((data) => {
+      //    //redundant because we have the record we just added but search the database for the latest record anyway
+      //    //logic for sending updated state to clients needs refactoring
+      //    for (const client of this.sessions[stateChange.session]) {
+      //      db.find({ session: stateChange.session })
+      //        .then((sessionRecords) => {
+      //          sendStateUpdate(
+      //            sessionRecords[sessionRecords.length - 1],
+      //            client
+      //          );
+      //        })
+      //        .catch((err) => {
+      //          console.log('Error in finding session', err);
+      //        });
+      //    }
+      //  })
+      //  .catch((err) => {
+      //    console.log('Error in update', err);
+      //  });
     }
 
     /*  UNDO:
@@ -160,33 +209,45 @@ class SyncHandler {
       */
     if (stateChange.action === 'undo') {
       console.log(`Got an undo message: ${message}`);
-      db.find({ session: stateChange.session })
-        .then((data) => {
-          if (data.length > 1) {
-            // console.log(data[data.length - 1]._id, " will be deleted.");
-            db.findOneAndDelete({ _id: data[data.length - 1]._id }).then(
-              (data) => {
-                console.log(data._id, 'was deleted');
-                for (const client of this.sessions[stateChange.session]) {
-                  //TODO: error handle for if the array is empty later
-                  db.find({ session: stateChange.session })
-                    .then((sessionRecords) => {
-                      sendStateUpdate(
-                        sessionRecords[sessionRecords.length - 1],
-                        client
-                      );
-                    })
-                    .catch((err) => {
-                      console.log('Error in finding session for undo', err);
-                    });
-                }
-              }
-            );
-          }
-        })
-        .catch((err) => {
-          console.log('Error in undo', err);
-        });
+      try {
+        await this.db.deleteLatestSessionRecord(stateChange.session);
+        const record = await this.db.getLatestSessionRecord(
+          stateChange.session
+        );
+        for (const client of this.sessions[stateChange.session]) {
+          sendStateUpdate(record, client);
+        }
+      } catch (err) {
+        console.log('Error in undo', err);
+      }
+
+      // db.find({ session: stateChange.session })
+      //   .then((data) => {
+      //     if (data.length > 1) {
+      //       // console.log(data[data.length - 1]._id, " will be deleted.");
+      //       db.findOneAndDelete({ _id: data[data.length - 1]._id }).then(
+      //         (data) => {
+      //           console.log(data._id, 'was deleted');
+      //          for (const client of this.sessions[stateChange.session]) {
+      //            //TODO: error handle for if the array is empty later
+      //            db.find({ session: stateChange.session })
+      //              .then((sessionRecords) => {
+      //                sendStateUpdate(
+      //                  sessionRecords[sessionRecords.length - 1],
+      //                  client
+      //                );
+      //              })
+      //              .catch((err) => {
+      //                console.log('Error in finding session for undo', err);
+      //              });
+      //          }
+      //        }
+      //      );
+      //    }
+      //  })
+      //  .catch((err) => {
+      //    console.log('Error in undo', err);
+      //  });
     }
 
     /*  REDO: **feature not yet functional**
@@ -198,34 +259,15 @@ class SyncHandler {
     }
   }
 
-  async latestRecord(session) {
-    try {
-      const records = await db.find({ session });
-      return records[records.length - 1];
-    }
-    catch(err) {
-      console.log('Error in finding session', err);
-    }
-  }
-
-  /**
-   * @property {Function} clearState ClearState is used for testing purposes to clear out the test db before running
-   */
-  async clearState() {
-    const sessionRecords = await db.find();
-    if (sessionRecords.length) {
-      await db.collection.drop();
-    }
-  }
   /**
    * @property {function} __getDB getDB is a method to return the entire DB ()
    */
   __getDB() {
-    return db;
+    return this.db;
   }
 
   close() {
-    mongoose.connection.close();
+    this.db.close();
   }
 }
 
