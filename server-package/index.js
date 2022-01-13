@@ -1,3 +1,4 @@
 const SyncHandler = require('./syncHandler.js');
 const MongoDriver = require('./mongoDriver.js');
-module.exports = { SyncHandler, MongoDriver };
+const PostgresDriver = require('./postgresDriver.js');
+module.exports = { SyncHandler, MongoDriver, PostgresDriver };

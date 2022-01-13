@@ -3,6 +3,8 @@ require('dotenv').config();
 
 const pool = new Pool({ connectionString: process.env.DB_URI });
 
+console.log('the pool is', pool);
+
 module.exports = {
   query: (text, params, callback) => {
     console.log('executed query', text);

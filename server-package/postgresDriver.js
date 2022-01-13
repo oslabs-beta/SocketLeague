@@ -1,5 +1,7 @@
-const { Pool } = require('pg');
-const db = require('./models/clientModelSQL.js');
+const pg = require('pg');
+// const { pool } = require('pg');
+//const db = require('./models/clientModelPostgres.js');
+let db;
 
 /**
  * @class PostgresDriver
@@ -12,7 +14,10 @@ class PostgresDriver {
     this.dbUri = uri;
   }
   async connect() {
-    await new Pool({ connectionString: this.dbUri });
+    //await new Pool({ connectionString: this.dbUri });
+    console.log('connect function called');
+    //await new pg.Client(this.dbUri);
+    db = await new pg.Client(this.dbUri);
   }
 
   /**
@@ -20,7 +25,11 @@ class PostgresDriver {
    * @params session is the session ID which will be searched in the database, which will find the most recent instance thereof
    */
   async getLatestSessionRecord(session) {
-    const records = await db.find({ session });
+    // const records = await db.find({ session });
+    const text = `SELECT * FROM client WHERE session=$1;`;
+    const values = [session];
+    const records = await db.query(text, values);
+    // console.log('The records in postresDriver are', records);
     if (records.length > 0) {
       const { session, state } = records[records.length - 1];
       return { session, state };
@@ -34,7 +43,9 @@ class PostgresDriver {
    * @param state
    */
   async createSessionRecord(session, state) {
-    ({ session, state } = await db.create({ session, state }));
+    const text = `INSERT INTO client (session, state) VALUES($1, $2);`;
+    const values = [session, state];
+    ({ session, state } = await db.query(text, values));
     return { session, state };
   }
 
@@ -43,10 +54,14 @@ class PostgresDriver {
    * @param session
    */
   async deleteLatestSessionRecord(session) {
-    const records = await db.find({ session });
+    const text = `SELECT * FROM client WHERE session=$1;`;
+    const value = [session];
+    const records = await db.query(text, value);
     if (records.length > 1) {
       const { id } = records[records.length - 1];
-      await db.findByIdAndDelete(id);
+      const text2 = `DELETE FROM client WHERE _id=$1;`;
+      const value2 = [id];
+      await db.query(text2, value2);
     }
   }
 
@@ -54,17 +69,18 @@ class PostgresDriver {
    * @function clearAllStates
    */
   async clearAllStates() {
-    const sessionRecords = await db.find();
-    if (sessionRecords.length) {
-      await db.collection.drop();
-    }
+    const text = `DELETE * FROM client`;
+    await db.query(text);
   }
 
   /**
    * @function close
    */
   close() {
-    mongoose.connection.close();
+    // need to test and verify if this is correct. It looks wrong
+    const text = `SELECT pg_terminate_backend(pid) FROM pg_stat_get_activity(NULL::integer)
+                  WHERE datid = (SELECT oid FROM pg_database WHERE datname = 'database_name');`;
+    db.query(text);
   }
 
   /**
