@@ -1,6 +1,11 @@
-![Socket League Logo](https://github.com/oslabs-beta/SocketLeague/blob/05ac3593c981402dc4adc8cdccccbd7dc225d56a/assets/images/Socket_League_Logo_.gif)
+<p align="center">
+  <img src="https://github.com/oslabs-beta/SocketLeague/blob/05ac3593c981402dc4adc8cdccccbd7dc225d56a/assets/images/Socket_League_Logo_.gif" alt="Socket League Logo"/>
+</p>
+
 
 # SocketLeague: Websockets that transfer synced state
+
+
 
 ## Table of Contents
 
