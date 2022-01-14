@@ -4,7 +4,7 @@ dotenv.config();
 
 const { Server } = require('mock-socket');
 //const { Pool } = require('pg');
-const PostgresDriver = require('../PostgresDriver');
+const PostgresDriver = require('../postgresDriver');
 
 const SyncHandler = require('../syncHandler.js');
 const MockClient = require('../mockClient');
