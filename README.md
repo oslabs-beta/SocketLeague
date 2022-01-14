@@ -1,5 +1,6 @@
-# SocketLeague
-Websockets that transfer synced state
+![Socket League Logo](https://github.com/oslabs-beta/SocketLeague/blob/05ac3593c981402dc4adc8cdccccbd7dc225d56a/assets/images/Socket_League_Logo_.gif)
+
+# SocketLeague: Websockets that transfer synced state
 
 ## Table of Contents
 
@@ -28,7 +29,7 @@ A lightweight non-opinionated NPM library that offers a custom React hook that u
 
 ### The Custom React Hook
 
-![The Custom React Hook](assets\images\Socket-League-Frontend-Hook.png)
+![The Custom React Hook](https://github.com/oslabs-beta/SocketLeague/blob/05ac3593c981402dc4adc8cdccccbd7dc225d56a/assets/images/Socket-League-Frontend-Hook.png)
 
 Let's break down the components of the call to explain each part of the hook invocation.
 
@@ -66,8 +67,6 @@ The version of React should be passed into useSyncState in order to avoid versio
 ```
 
 ### The synchronized hook server handler
-
-![The Server Sychronized State Handler](assets\images\Socket-League-Backend.png)
 
 #### The SyncHandler Class
 
