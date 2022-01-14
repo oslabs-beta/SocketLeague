@@ -25,7 +25,7 @@ const types = {
   REDO: 'redo',
 };
 
-//the schema has to be specified in here too, then
+autoDisconnectClients = true;
 
 /**
  * @class SyncHandler
@@ -39,7 +39,6 @@ class SyncHandler {
     this.sessions = {};
     this.db = db;
     this.merger = new StateMerger();
-    this.autoDisconnectClients = true;
     this.handleWsConnection = (socket) => {
       console.log('Somebody connected to the websocket server');
       socket.on('message', (message) => {
@@ -48,12 +47,19 @@ class SyncHandler {
     };
   }
 
+
+
   /**
    * @property {Function} connect Connect to the users provided URI
    *
    */
   async connect() {
     await this.db.connect();
+  }
+
+  toggleAutoDisconnect(){
+    autoDisconnectClients = !autoDisconnectClients;
+    return autoDisconnectClients;
   }
 
     /**
@@ -64,6 +70,8 @@ class SyncHandler {
  processState(stateChange){
     return stateChange;
   }
+
+
 
   /**
    * @property {Function} handleState Primary function that handles all state changes includeing the initial state and any update/undo state changes
@@ -77,15 +85,20 @@ class SyncHandler {
       } else {
         sessions[stateChange.session] = new Set();
       }
-      // socket._slname = "session: "+stateChange.session+" ID: "+sessions[stateChange.session].size;
+      socket._slname = "session: "+stateChange.session+" ID: "+sessions[stateChange.session].size;
       sessions[stateChange.session].add(socket);
     }
-    function sendStateUpdate(record, client) {
+    function sendStateUpdate(record, client, sessions) {
+      const OPEN = 1; //readyState 1 = WebSocket.OPEN
       // console.log(client._slname, client._readyState, client._closeCode, client._closeFrameReceived, client._closeFrameSent);
-      // console.log(Object.keys(client));
-      client.send(
-        JSON.stringify({ state: record.state, session: record.session })
-      );
+      if (!autoDisconnectClients || client.readyState === OPEN){ 
+        client.send(
+          JSON.stringify({ state: record.state, session: record.session })
+        );
+      } else if (client.readyState > OPEN) {
+        sessions[record.session].delete(client);
+      }
+      // pingClient(socket);
     }
     //parse the message into a json object
     const stateChange = this.processState(JSON.parse(message)); //message.json(); //stateChange will be an object now
@@ -104,7 +117,7 @@ class SyncHandler {
           if (data) {
             createNewSession(this.sessions, stateChange);
             for (const client of this.sessions[stateChange.session]) {
-              sendStateUpdate(data, client);
+              sendStateUpdate(data, client, this.sessions);
             }
           } else {
             this.db
@@ -112,7 +125,7 @@ class SyncHandler {
               .then((data) => {
                 createNewSession(this.sessions, stateChange);
                 for (const client of this.sessions[stateChange.session]) {
-                  sendStateUpdate(data, client);
+                  sendStateUpdate(data, client, this.sessions);
                 }
               })
               .catch((err) => {
@@ -164,7 +177,7 @@ class SyncHandler {
         );
         const record = await this.db.createSessionRecord(session, mergedState);
         for (const client of this.sessions[session]) {
-          sendStateUpdate(record, client);
+          sendStateUpdate(record, client, this.sessions);
         }
       } catch (err) {
         console.log('Error in update', err);
@@ -206,7 +219,7 @@ class SyncHandler {
           stateChange.session
         );
         for (const client of this.sessions[stateChange.session]) {
-          sendStateUpdate(record, client);
+          sendStateUpdate(record, client, this.sessions);
         }
       } catch (err) {
         console.log('Error in undo', err);
@@ -271,5 +284,6 @@ class SyncHandler {
     this.db.close();
   }
 }
+
 
 module.exports = SyncHandler;
