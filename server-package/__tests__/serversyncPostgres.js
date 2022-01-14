@@ -3,8 +3,8 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const { Server } = require('mock-socket');
-const mongoose = require('mongoose');
-const JsonDriver = require('../jsonDriver');
+//const { Pool } = require('pg');
+const PostgresDriver = require('../postgresDriver');
 
 const SyncHandler = require('../syncHandler.js');
 const MockClient = require('../mockClient');
@@ -17,13 +17,24 @@ describe('WebSocket Server', () => {
   const wsServer = new Server(WS_URI);
 
   beforeAll(async () => {
-    syncState = new SyncHandler(new JsonDriver());
+    syncState = new SyncHandler(new PostgresDriver(process.env.DB_POSTGRES));
+    console.log(process.env.DB_POSTGRES);
     await syncState.connect();
     wsServer.on('connection', syncState.handleWsConnection);
   });
 
   afterAll(async () => {
-    mongoose.connection.close();
+    await syncState.close();
+  });
+
+  it('Server clears the database', async () => {
+    const text = `INSERT INTO client (session, state) VALUES ($1, $2);`;
+    const values = ['0', {}];
+    await syncState.db.__getDB().query(text, values);
+    await syncState.db.clearAllStates();
+    const text2 = `SELECT * FROM client;`;
+    const sessionRecords = await syncState.db.__getDB().query(text2);
+    expect(sessionRecords.rows).toEqual([]);
   });
 
   it('Client receives initial state when joining a new session', async () => {
@@ -145,6 +156,33 @@ describe('WebSocket Server', () => {
       session: '3',
       state: 'session three update',
     });
+  });
+
+  it('Server stores updates to the state in the database (upon receiving the update call).', async () => {
+    await syncState.db.clearAllStates();
+    const client = new MockClient(WS_URI);
+    await client.connected;
+
+    client.send({
+      state: 'initialize DB test on session 1',
+      action: 'initial',
+      session: '1',
+    });
+    await expect(client).toReceiveClientMessage({
+      session: '1',
+      state: 'initialize DB test on session 1',
+    });
+
+    client.send({
+      state: 'am i in the database?',
+      action: 'update',
+      session: '1',
+    });
+    await client.nextMessage;
+    const text = `SELECT * FROM client WHERE session=$1 AND state=$2;`;
+    const values = ['1', JSON.stringify('am i in the database?')];
+    const sessionRecords = await syncState.db.__getDB().query(text, values);
+    expect(sessionRecords.rows).toHaveLength(1);
   });
 
   it('Server reverts to the previous state stored in the database for a given session (upon receiving the undo call).', async () => {

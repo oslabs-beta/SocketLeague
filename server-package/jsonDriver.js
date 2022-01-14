@@ -1,4 +1,3 @@
-
 class JsonDriver {
 
     construcutor() {
@@ -41,7 +40,7 @@ class JsonDriver {
       this.db = {};
     }
 
-    close() { 
+    async close() { 
 
     }
 }

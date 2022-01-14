@@ -1,10 +1,10 @@
-const mongoose = require('mongoose');
-const db = require('./models/clientModel.js');
+const pg = require('pg');
+const db = require('./models/clientModelPostgres.js');
 
 /**
- * @class MongoDriver
+ * @class PostgresDriver
  */
-class MongoDriver {
+class PostgresDriver {
   /**
    * @param {string} uri The uri is used to connect to the users DB
    */
@@ -12,10 +12,8 @@ class MongoDriver {
     this.dbUri = uri;
   }
   async connect() {
-    await mongoose.connect(this.dbUri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    await db.connect(this.dbUri);
+    //await new pg.Client(this.dbUri);
   }
 
   /**
@@ -23,21 +21,25 @@ class MongoDriver {
    * @params session is the session ID which will be searched in the database, which will find the most recent instance thereof
    */
   async getLatestSessionRecord(session) {
-    const records = await db.find({ session });
+    const text = `SELECT * FROM client WHERE session=$1 ORDER BY _id DESC LIMIT 1;`;
+    const values = [session];
+    const records = (await db.query(text, values)).rows;
     if (records.length > 0) {
       const { session, state } = records[records.length - 1];
-      return { session, state };
+      return { session, state: JSON.parse(state) };
     }
     return null;
   }
 
   /**
    * @function createSessionRecord
-   * @param session 
+   * @param session
    * @param state
    */
   async createSessionRecord(session, state) {
-    ({ session, state } = await db.create({ session, state }));
+    const text = `INSERT INTO client (session, state) VALUES($1, $2);`;
+    const values = [session, JSON.stringify(state)];
+    await db.query(text, values);
     return { session, state };
   }
 
@@ -46,10 +48,14 @@ class MongoDriver {
    * @param session
    */
   async deleteLatestSessionRecord(session) {
-    const records = await db.find({ session });
+    const text = `SELECT * FROM client WHERE session=$1;`;
+    const value = [session];
+    const records = (await db.query(text, value)).rows;
     if (records.length > 1) {
       const { id } = records[records.length - 1];
-      await db.findByIdAndDelete(id);
+      const text2 = `DELETE FROM client WHERE _id=(SELECT MAX(_id) FROM client WHERE session=$1);`;
+      const value2 = [session];
+      await db.query(text2, value2);
     }
   }
 
@@ -57,17 +63,15 @@ class MongoDriver {
    * @function clearAllStates
    */
   async clearAllStates() {
-    const sessionRecords = await db.find();
-    if (sessionRecords.length) {
-      await db.collection.drop();
-    }
+    const text = `DELETE FROM client`;
+    await db.query(text);
   }
 
   /**
    * @function close
    */
   async close() {
-    await mongoose.connection.close();
+    await db.close();
   }
 
   /**
@@ -78,4 +82,4 @@ class MongoDriver {
   }
 }
 
-module.exports = MongoDriver;
+module.exports = PostgresDriver;
