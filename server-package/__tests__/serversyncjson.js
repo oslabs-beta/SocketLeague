@@ -3,7 +3,6 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const { Server } = require('mock-socket');
-const mongoose = require('mongoose');
 const JsonDriver = require('../jsonDriver');
 
 const SyncHandler = require('../syncHandler.js');
@@ -23,7 +22,7 @@ describe('WebSocket Server', () => {
   });
 
   afterAll(async () => {
-    mongoose.connection.close();
+    await syncState.close();
   });
 
   it('Client receives initial state when joining a new session', async () => {
@@ -338,5 +337,63 @@ describe('WebSocket Server', () => {
       session: 'counter',
       state: 2,
     });
+  });
+
+  it('Unsubscribes a client', async () => {
+    await syncState.db.clearAllStates();
+    const client1 = new MockClient(WS_URI);
+    const client2 = new MockClient(WS_URI);
+    await client1.connected;
+    await client2.connected;
+
+    // Subscribing both clients to session 0 and 1
+    client1.send({
+      state: 0,
+      action: 'initial',
+      session: '0',
+    });
+    await client1.nextMessage;
+    client1.send({
+      state: 0,
+      action: 'initial',
+      session: '1',
+    });
+    await client1.nextMessage;
+    client2.send({
+      state: 0,
+      action: 'initial',
+      session: '0',
+    });
+    await client1.nextMessage;
+    client2.send({
+      state: 0,
+      action: 'initial',
+      session: '1',
+    });
+    await client1.nextMessage;
+
+    client2.send({
+      state: 1,
+      action: 'update',
+      session: '0',
+    });
+    expect(client1).toReceiveClientMessage({session: '0', state: 1});
+
+    client1.send({
+      action: 'unsubscribe',
+      session: '0',
+    });
+
+    client2.send({
+      state: 2,
+      action: 'update',
+      session: '0',
+    });
+    client2.send({
+      state: 3,
+      action: 'update',
+      session: '1',
+    });
+    expect(client1).toReceiveClientMessage({session: '1', state: 3});
   });
 });

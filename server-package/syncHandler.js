@@ -40,7 +40,6 @@ class SyncHandler {
     this.db = db;
     this.merger = new StateMerger();
     this.handleWsConnection = (socket) => {
-      console.log('Somebody connected to the websocket server');
       socket.on('message', (message) => {
         this.handleState(message, socket);
       });
@@ -258,7 +257,6 @@ class SyncHandler {
     }
 
     if (stateChange.action === 'unsubscribe') {
-      console.log(`Got an unsubscribe message: ${message}`);
       try {
         //this.sessions is an object, and each property has a key of a Set of clients
         this.sessions[stateChange.session].delete(socket);
