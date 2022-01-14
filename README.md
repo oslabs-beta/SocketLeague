@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://github.com/oslabs-beta/SocketLeague/blob/05ac3593c981402dc4adc8cdccccbd7dc225d56a/assets/images/Socket_League_Logo_.gif" alt="Socket League Logo"/>
+  <img src="https://github.com/oslabs-beta/SocketLeague/blob/5bd79f9556de084e33323787a46da8e9c2442288/assets/images/Socket_League_Logo_.gif" alt="Socket League Logo"/>
 </p>
 
 
