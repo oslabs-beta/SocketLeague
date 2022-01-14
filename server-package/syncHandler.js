@@ -98,7 +98,6 @@ class SyncHandler {
       } else if (client.readyState > OPEN) {
         sessions[record.session].delete(client);
       }
-      // pingClient(socket);
     }
     //parse the message into a json object
     const stateChange = this.processState(JSON.parse(message)); //message.json(); //stateChange will be an object now
