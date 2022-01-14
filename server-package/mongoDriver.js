@@ -66,8 +66,8 @@ class MongoDriver {
   /**
    * @function close
    */
-  close() {
-    mongoose.connection.close();
+  async close() {
+    await mongoose.connection.close();
   }
 
   /**

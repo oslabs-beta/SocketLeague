@@ -1,7 +1,5 @@
 const pg = require('pg');
-// const { pool } = require('pg');
 const db = require('./models/clientModelPostgres.js');
-// let db;
 
 /**
  * @class PostgresDriver
@@ -14,10 +12,8 @@ class PostgresDriver {
     this.dbUri = uri;
   }
   async connect() {
-    //await new Pool({ connectionString: this.dbUri });
-    console.log('connect function called');
-    await new pg.Client(this.dbUri);
-    // db = await new pg.Client(this.dbUri);
+    await db.connect(this.dbUri);
+    //await new pg.Client(this.dbUri);
   }
 
   /**
@@ -25,14 +21,12 @@ class PostgresDriver {
    * @params session is the session ID which will be searched in the database, which will find the most recent instance thereof
    */
   async getLatestSessionRecord(session) {
-    // const records = await db.find({ session });
-    const text = `SELECT * FROM client WHERE session=$1;`;
+    const text = `SELECT * FROM client WHERE session=$1 ORDER BY _id DESC LIMIT 1;`;
     const values = [session];
-    const records = await db.query(text, values);
-    // console.log('The records in postresDriver are', records);
+    const records = (await db.query(text, values)).rows;
     if (records.length > 0) {
       const { session, state } = records[records.length - 1];
-      return { session, state };
+      return { session, state: JSON.parse(state) };
     }
     return null;
   }
@@ -44,8 +38,8 @@ class PostgresDriver {
    */
   async createSessionRecord(session, state) {
     const text = `INSERT INTO client (session, state) VALUES($1, $2);`;
-    const values = [session, state];
-    ({ session, state } = await db.query(text, values));
+    const values = [session, JSON.stringify(state)];
+    await db.query(text, values);
     return { session, state };
   }
 
@@ -56,11 +50,11 @@ class PostgresDriver {
   async deleteLatestSessionRecord(session) {
     const text = `SELECT * FROM client WHERE session=$1;`;
     const value = [session];
-    const records = await db.query(text, value);
+    const records = (await db.query(text, value)).rows;
     if (records.length > 1) {
       const { id } = records[records.length - 1];
-      const text2 = `DELETE FROM client WHERE _id=$1;`;
-      const value2 = [id];
+      const text2 = `DELETE FROM client WHERE _id=(SELECT MAX(_id) FROM client WHERE session=$1);`;
+      const value2 = [session];
       await db.query(text2, value2);
     }
   }
@@ -69,18 +63,15 @@ class PostgresDriver {
    * @function clearAllStates
    */
   async clearAllStates() {
-    const text = `DELETE * FROM client`;
+    const text = `DELETE FROM client`;
     await db.query(text);
   }
 
   /**
    * @function close
    */
-  close() {
-    // need to test and verify if this is correct. It looks wrong
-    const text = `SELECT pg_terminate_backend(pid) FROM pg_stat_get_activity(NULL::integer)
-                  WHERE datid = (SELECT oid FROM pg_database WHERE datname = 'database_name');`;
-    db.query(text);
+  async close() {
+    await db.close();
   }
 
   /**

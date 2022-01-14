@@ -3,7 +3,6 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const { Server } = require('mock-socket');
-const mongoose = require('mongoose');
 const MongoDriver = require('../mongoDriver');
 
 const SyncHandler = require('../syncHandler.js');
@@ -17,13 +16,14 @@ describe('WebSocket Server', () => {
   const wsServer = new Server(WS_URI);
 
   beforeAll(async () => {
-    syncState = new SyncHandler(new MongoDriver(process.env.DB_URI));
+    syncState = new SyncHandler(new MongoDriver(process.env.DB_MONGO));
     await syncState.connect();
     wsServer.on('connection', syncState.handleWsConnection);
   });
 
   afterAll(async () => {
-    mongoose.connection.close();
+    await syncState.close();
+    //mongoose.connection.close();
   });
 
   it('Server clears the database', async () => {

@@ -84,7 +84,7 @@ class SyncHandler {
    */
   async handleState(message, socket) {
     function createNewSession(sessions, stateChange) {
-      console.log('initializing session ' + stateChange.session);
+      // console.log('initializing session ' + stateChange.session);
       if (sessions[stateChange.session]) {
       } else {
         sessions[stateChange.session] = new Set();
@@ -107,7 +107,6 @@ class SyncHandler {
             Only clients with the right session ID receive updates
       */
     if (stateChange.action === 'initial') {
-      console.log(`Got an initial message: ${message}`);
       try {
         this.db.getLatestSessionRecord(stateChange.session).then((data) => {
           if (data) {
@@ -159,8 +158,6 @@ class SyncHandler {
           Find all the clients that are sharing the same session ID, and update their current to the new state. 
       */
     if (stateChange.action === 'update') {
-      // console.log(`Got an update message:`);
-      console.log(`Got an update message: ${message}`);
       try {
         const { oldState, state, session } = stateChange;
         const serverState = (await this.db.getLatestSessionRecord(session))
@@ -208,7 +205,6 @@ class SyncHandler {
             database and delete it. The last record before the one deleted will be sent out to all clients and become the current state.
       */
     if (stateChange.action === 'undo') {
-      console.log(`Got an undo message: ${message}`);
       try {
         await this.db.deleteLatestSessionRecord(stateChange.session);
         const record = await this.db.getLatestSessionRecord(

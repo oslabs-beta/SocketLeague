@@ -26,13 +26,6 @@ describe('WebSocket Server', () => {
     mongoose.connection.close();
   });
 
-  xit('Server clears the database', async () => {
-    await syncState.db.__getDB().create({ state: {}, session: '0' });
-    await syncState.db.clearAllStates();
-    const sessionRecords = await syncState.db.__getDB().find();
-    expect(sessionRecords).toEqual([]);
-  });
-
   it('Client receives initial state when joining a new session', async () => {
     await syncState.db.clearAllStates();
     const client = new MockClient(WS_URI);
@@ -152,35 +145,6 @@ describe('WebSocket Server', () => {
       session: '3',
       state: 'session three update',
     });
-  });
-
-  xit('Server stores updates to the state in the database (upon receiving the update call).', async () => {
-    await syncState.db.clearAllStates();
-    const client = new MockClient(WS_URI);
-    await client.connected;
-
-    client.send({
-      state: 'initialize DB test on session 1',
-      action: 'initial',
-      session: '1',
-    });
-    await expect(client).toReceiveClientMessage({
-      session: '1',
-      state: 'initialize DB test on session 1',
-    });
-
-    client.send({
-      state: 'am i in the database?',
-      action: 'update',
-      session: '1',
-    });
-    await client.nextMessage;
-
-    const sessionRecords = await syncState.db.__getDB().find({
-      state: 'am i in the database?',
-      session: '1',
-    });
-    expect(sessionRecords).toHaveLength(1);
   });
 
   it('Server reverts to the previous state stored in the database for a given session (upon receiving the undo call).', async () => {

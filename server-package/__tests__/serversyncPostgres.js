@@ -17,29 +17,27 @@ describe('WebSocket Server', () => {
   const wsServer = new Server(WS_URI);
 
   beforeAll(async () => {
-    syncState = new SyncHandler(new PostgresDriver(process.env.DB_URI));
+    syncState = new SyncHandler(new PostgresDriver(process.env.DB_POSTGRES));
+    console.log(process.env.DB_POSTGRES);
     await syncState.connect();
     wsServer.on('connection', syncState.handleWsConnection);
   });
 
   afterAll(async () => {
-    db.close();
+    await syncState.close();
   });
 
   it('Server clears the database', async () => {
-    //await syncState.db.__getDB().create({ state: {}, session: '0' });
-    console.log(syncState);
-    console.log(syncState.db);
     const text = `INSERT INTO client (session, state) VALUES ($1, $2);`;
-    await syncState.db.query(text);
+    const values = ['0', {}];
+    await syncState.db.__getDB().query(text, values);
     await syncState.db.clearAllStates();
-    //const sessionRecords = await syncState.db.__getDB().find();
-    //const text2 = `SELECT * FROM client;`;
-    const sessionRecords = await syncState.db.__getDB();
-    expect(sessionRecords).toEqual([]);
+    const text2 = `SELECT * FROM client;`;
+    const sessionRecords = await syncState.db.__getDB().query(text2);
+    expect(sessionRecords.rows).toEqual([]);
   });
 
-  xit('Client receives initial state when joining a new session', async () => {
+  it('Client receives initial state when joining a new session', async () => {
     await syncState.db.clearAllStates();
     const client = new MockClient(WS_URI);
     await client.connected;
@@ -55,7 +53,7 @@ describe('WebSocket Server', () => {
     });
   });
 
-  xit('Server sends an existing state to the client when the client connects with a valid session ID', async () => {
+  it('Server sends an existing state to the client when the client connects with a valid session ID', async () => {
     await syncState.db.clearAllStates();
     const client1 = new MockClient(WS_URI);
     await client1.connected;
@@ -81,7 +79,7 @@ describe('WebSocket Server', () => {
     });
   });
 
-  xit('Server broadcasts updated state to all clients with same session ID when it receives an updated state', async () => {
+  it('Server broadcasts updated state to all clients with same session ID when it receives an updated state', async () => {
     await syncState.db.clearAllStates();
     const client1 = new MockClient(WS_URI);
     const client2 = new MockClient(WS_URI);
@@ -113,7 +111,7 @@ describe('WebSocket Server', () => {
     });
   });
 
-  xit('Server broadcasts updated state to only appropriate clients when it receives an updated state', async () => {
+  it('Server broadcasts updated state to only appropriate clients when it receives an updated state', async () => {
     await syncState.db.clearAllStates();
     const client1 = new MockClient(WS_URI);
     const client2 = new MockClient(WS_URI);
@@ -160,7 +158,7 @@ describe('WebSocket Server', () => {
     });
   });
 
-  xit('Server stores updates to the state in the database (upon receiving the update call).', async () => {
+  it('Server stores updates to the state in the database (upon receiving the update call).', async () => {
     await syncState.db.clearAllStates();
     const client = new MockClient(WS_URI);
     await client.connected;
@@ -181,15 +179,13 @@ describe('WebSocket Server', () => {
       session: '1',
     });
     await client.nextMessage;
-
-    const sessionRecords = await syncState.db.__getDB().find({
-      state: 'am i in the database?',
-      session: '1',
-    });
-    expect(sessionRecords).toHaveLength(1);
+    const text = `SELECT * FROM client WHERE session=$1 AND state=$2;`;
+    const values = ['1', JSON.stringify('am i in the database?')];
+    const sessionRecords = await syncState.db.__getDB().query(text, values);
+    expect(sessionRecords.rows).toHaveLength(1);
   });
 
-  xit('Server reverts to the previous state stored in the database for a given session (upon receiving the undo call).', async () => {
+  it('Server reverts to the previous state stored in the database for a given session (upon receiving the undo call).', async () => {
     await syncState.db.clearAllStates();
     const client = new MockClient(WS_URI);
     await client.connected;
@@ -232,7 +228,7 @@ describe('WebSocket Server', () => {
     });
   });
 
-  xit('Server reverts to correct state after three updates, two undos, two updates, and two undos.', async () => {
+  it('Server reverts to correct state after three updates, two undos, two updates, and two undos.', async () => {
     await syncState.db.clearAllStates();
     const client = new MockClient(WS_URI);
     await client.connected;
@@ -333,7 +329,7 @@ describe('WebSocket Server', () => {
     }
   }, 10000);
 
-  xit('Uses custom state update mergers', async () => {
+  it('Uses custom state update mergers', async () => {
     await syncState.db.clearAllStates();
     syncState.merger.registerHandler(
       'counter',
