@@ -9,6 +9,8 @@ jobs:
     environment: testing
     env:
       DB_URI: ${{ secrets.DB_URI }}
+      DB_MONGO: ${{ secrets.DB_MONGO }}
+      DB_POSTGRES: ${{ secrets.DB_POSTGRES }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
