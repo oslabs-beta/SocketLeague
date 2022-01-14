@@ -80,6 +80,18 @@ describe('Connection', () => {
     });
   });
 
+  it('Unsubscribes', async () => {
+    conn = new Connection(WS_URI);
+    await server.connected;
+    conn.subscribe('0', () => {}, 'hello');
+    await server.nextMessage;
+    conn.unsubscribe('0');
+    await expect(server).toReceiveMessage({
+      action: 'unsubscribe',
+      session: '0',
+    });
+  });
+
   it('Gets updates from the server', async () => {
     conn = new Connection(WS_URI);
     await server.connected;
