@@ -5,6 +5,7 @@
 //temporary: directly database into the websocket server
 // const db = require('./models/clientModel.js');
 const StateMerger = require('./merger');
+const JsonDriver = require('./jsonDriver');
 // import db from "./models/clientModel.js";
 // const mongoose = require('mongoose');
 
@@ -37,7 +38,7 @@ class SyncHandler {
    */
   constructor(db) {
     this.sessions = {};
-    this.db = db;
+    this.db = db || new JsonDriver();
     this.merger = new StateMerger();
     this.handleWsConnection = (socket) => {
       socket.on('message', (message) => {
