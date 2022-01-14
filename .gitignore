@@ -111,3 +111,6 @@ docs/
 
 # Electron release
 release/
+
+# DS_store
+.DS_Store
