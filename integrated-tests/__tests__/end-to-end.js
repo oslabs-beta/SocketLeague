@@ -37,16 +37,14 @@ describe('End to end testing', () => {
     server.httpServer.close();
   });
 
-  it('passes', async () => {});
-
-  xit('loads', async () => {
+  it('loads', async () => {
     await page1.goto(APP);
     await page1.waitForSelector('#loaded');
     const loadedText = await page1.$eval('#loaded', (el) => el.innerText);
     expect(loadedText).toEqual('Page is loaded');
   });
 
-  xit('synchronizes state', async () => {
+  it('synchronizes state', async () => {
     await page2.goto(APP);
     await page2.waitForSelector('#loaded');
     // FIXME: sometimes the test fails without this timeout
@@ -60,7 +58,7 @@ describe('End to end testing', () => {
     );
   });
 
-  xit('undos state', async () => {
+  it('undos state', async () => {
     await page2.click('#undo');
     await page1.waitForFunction(
       () => document.getElementById('number').innerText === '0'
