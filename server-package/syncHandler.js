@@ -25,7 +25,7 @@ const types = {
   REDO: 'redo',
 };
 
-autoDisconnectClients = true;
+autoDisconnectClients = true; //need to refactor this out
 
 /**
  * @class SyncHandler
@@ -44,6 +44,7 @@ class SyncHandler {
         this.handleState(message, socket);
       });
     };
+    // this.autoDisconnectClients = true;
   }
 
 
@@ -69,8 +70,6 @@ class SyncHandler {
  processState(stateChange){
     return stateChange;
   }
-
-
 
   /**
    * @property {Function} handleState Primary function that handles all state changes includeing the initial state and any update/undo state changes

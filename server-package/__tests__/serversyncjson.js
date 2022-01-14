@@ -396,4 +396,51 @@ describe('WebSocket Server', () => {
     });
     expect(client1).toReceiveClientMessage({session: '1', state: 3});
   });
+
+  it('can preprocess state as specified', async () => {
+    await syncState.db.clearAllStates();
+
+    syncState.processState = (statechange) => {
+      if (statechange.action === 'update'){
+        statechange.state = 4;
+      }
+      return statechange;
+    };
+
+    const client1 = new MockClient(WS_URI);
+    await client1.connected;
+
+    client1.send({
+      state: 0,
+      action: 'initial',
+      session: 'count',
+    });
+
+    await expect(client1).toReceiveClientMessage({
+      session: 'count',
+      state: 0,
+    });
+
+    client1.send({
+      state: 1,
+      action: 'update',
+      session: 'count',
+    });
+
+    await expect(client1).toReceiveClientMessage({
+      session: 'count',
+      state: 4,
+    });
+
+    client1.send({
+      state: 5,
+      action: 'update',
+      session: 'count',
+    });
+
+    await expect(client1).toReceiveClientMessage({
+      session: 'count',
+      state: 4,
+    });
+  });
 });
