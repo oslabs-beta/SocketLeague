@@ -8,6 +8,7 @@ import ReconnectingWebSocket from 'reconnecting-websocket'
 const types = {
   UPDATE: 'update',
   INITIAL: 'initial',
+  UNSUBSCRIBE: 'unsubscribe',
   UNDO: 'undo',
   REDO: 'redo',
 };
@@ -23,7 +24,7 @@ export class Connection {
     this.unsubscribe = this.unsubscribe.bind(this);
     this.sendUpdate = this.sendUpdate.bind(this);
     this.sendUndo = this.sendUndo.bind(this);
-    this._publish = this._publish.bind(this);
+    this._send = this._send.bind(this);
     this._canResubscribe = false;
 
     this.pendingMessageData = [];
@@ -72,7 +73,7 @@ export class Connection {
     this.subscriptions.set(session, onMessage);
     const action = types.INITIAL;
     const state = initialState;
-    this._publish({ action, state, session });
+    this._send({ action, state, session });
   }
 
   /**
@@ -87,6 +88,8 @@ export class Connection {
       return;
     }
     this.subscriptions.delete(session);
+    const action = types.UNSUBSCRIBE;
+    this._send({ action, session });
   }
 
   /**
@@ -96,12 +99,11 @@ export class Connection {
    */
 
   resubscribe() {
-    console.log('attempting resubscribe with ',this.subscriptions)
     if (this.subscriptions.size > 0){
       this.subscriptions.forEach((hook, session) => {
         const action = types.INITIAL;
         const state = '';
-        this._publish({ action, state, session });
+        this._send({ action, state, session });
       })
     }
 
@@ -113,7 +115,7 @@ export class Connection {
    */
   sendUndo(session) {
     const action = types.UNDO;
-    this._publish({ action, session });
+    this._send({ action, session });
   }
 
   /**
@@ -125,14 +127,14 @@ export class Connection {
   sendUpdate(session, oldState, newState) {
     const action = types.UPDATE;
     const state = newState;
-    this._publish({ action, state, oldState, session });
+    this._send({ action, state, oldState, session });
   }
 
   /**
-   * @property {Function} _publish
+   * @property {Function} _send
    * @param {Object} message This is an object sent by the client that is being stringified and sent through the web socket
    */
-  _publish(message) {
+  _send(message) {
     const data = JSON.stringify(message);
     if (this.socket.readyState === WebSocket.OPEN) {
       this.socket.send(data);
