@@ -12,7 +12,7 @@ const MockClient = require('../mockClient');
 const PORT = 3000;
 const WS_URI = `ws://localhost:${PORT}`;
 
-xdescribe('WebSocket Server', () => {
+describe('WebSocket Server', () => {
   let syncState;
   const wsServer = new Server(WS_URI);
 

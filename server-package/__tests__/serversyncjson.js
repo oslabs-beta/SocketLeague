@@ -338,6 +338,40 @@ describe('WebSocket Server', () => {
     });
   });
 
+  it('can preprocess state as specified', async () => {
+    await syncState.db.clearAllStates();
+    const client = new MockClient(WS_URI);
+    await client.connected;
+
+    syncState.setProcessState ((statechange) => {
+      if (statechange.action === 'update'){
+        statechange.state = 4;
+      }
+      return statechange;
+    });
+
+    client.send({
+      state: 'this is a test message',
+      action: 'initial',
+      session: '0',
+    });
+    await expect(client).toReceiveClientMessage({
+      session: '0',
+      state: 'this is a test message',
+    });
+    client.send({
+      state: 'this is another test message',
+      action: 'update',
+      session: '0',
+    });
+    await expect(client).toReceiveClientMessage({
+      session: '0',
+      state: 4,
+    });
+
+    syncState.resetProcessState();
+  });
+
   it('Unsubscribes a client', async () => {
     await syncState.db.clearAllStates();
     const client1 = new MockClient(WS_URI);
@@ -394,52 +428,5 @@ describe('WebSocket Server', () => {
       session: '1',
     });
     expect(client1).toReceiveClientMessage({session: '1', state: 3});
-  });
-
-  it('can preprocess state as specified', async () => {
-    await syncState.db.clearAllStates();
-
-    syncState.processState = (statechange) => {
-      if (statechange.action === 'update'){
-        statechange.state = 4;
-      }
-      return statechange;
-    };
-
-    const client1 = new MockClient(WS_URI);
-    await client1.connected;
-
-    client1.send({
-      state: 0,
-      action: 'initial',
-      session: 'count',
-    });
-
-    await expect(client1).toReceiveClientMessage({
-      session: 'count',
-      state: 0,
-    });
-
-    client1.send({
-      state: 1,
-      action: 'update',
-      session: 'count',
-    });
-
-    await expect(client1).toReceiveClientMessage({
-      session: 'count',
-      state: 4,
-    });
-
-    client1.send({
-      state: 5,
-      action: 'update',
-      session: 'count',
-    });
-
-    await expect(client1).toReceiveClientMessage({
-      session: 'count',
-      state: 4,
-    });
   });
 });
