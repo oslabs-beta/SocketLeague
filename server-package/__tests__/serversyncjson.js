@@ -3,7 +3,6 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const { Server } = require('mock-socket');
-const JsonDriver = require('../jsonDriver');
 
 const SyncHandler = require('../syncHandler.js');
 const MockClient = require('../mockClient');
@@ -16,7 +15,7 @@ describe('WebSocket Server', () => {
   const wsServer = new Server(WS_URI);
 
   beforeAll(async () => {
-    syncState = new SyncHandler(new JsonDriver());
+    syncState = new SyncHandler();
     await syncState.connect();
     wsServer.on('connection', syncState.handleWsConnection);
   });
