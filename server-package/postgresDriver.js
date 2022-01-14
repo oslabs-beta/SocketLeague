@@ -1,7 +1,7 @@
 const pg = require('pg');
 // const { pool } = require('pg');
-//const db = require('./models/clientModelPostgres.js');
-let db;
+const db = require('./models/clientModelPostgres.js');
+// let db;
 
 /**
  * @class PostgresDriver
@@ -16,8 +16,8 @@ class PostgresDriver {
   async connect() {
     //await new Pool({ connectionString: this.dbUri });
     console.log('connect function called');
-    //await new pg.Client(this.dbUri);
-    db = await new pg.Client(this.dbUri);
+    await new pg.Client(this.dbUri);
+    // db = await new pg.Client(this.dbUri);
   }
 
   /**
