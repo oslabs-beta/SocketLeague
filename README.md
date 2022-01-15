@@ -40,7 +40,7 @@ Let's break down the components of the call to explain each part of the hook inv
 
 #### The Connection Class
 
-The ``Connection`` class wraps all the front-end logic to manage the hook. It should be initialized with the URL of the websocket server with which the client will be communicating state, and which will be sending state updates to the client.
+The ``Connection`` class wraps all the front-end logic to manage the hook. It should be initialized with the URL of the websocket server with which the client will be communicating state, and which will be sending state updates to the client. Under the hood, the Connection class automatically reconnects using the [Reconnecting WebSocket library](https://www.npmjs.com/package/reconnecting-websocket).
 
 #### Initializing state and session
 
@@ -54,7 +54,8 @@ The ``Connection`` class sends three message types to the server: ``Initial``, `
 
 1. ``Initial``: This message type is the first message sent when the Connection object first contacts the server. The first time a ``session ID`` is received by the server, it saves the received state in the database. Otherwise, it updates the client with the already saved state information on the database instead.
 2. ``Update``: After a websocket connection is established, any updates to the application state are transmitted to the server via the custom React hook through ``Update`` messages. Each reception of an ``Update`` message by the server causes the server to emit updates to all clients associated with that ``Update`` message's ``session ID``
-3. ``Undo``: This message type notifes the server to delete the last state associated with the included ``session ID`` and transmit the last prior state associated with ``session ID`` to the client. Nothing will happen if the state is regressed to the point of initial contact with the first client to initialize the earliest state associated with that ``session ID``.
+3. ``Undo``: This message type notifes the server to delete the last state associated with the included ``session ID`` and transmit the last prior state associated with ``session ID`` to the client. This behavior can be customized  Nothing will happen if the state is regressed to the point of initial contact with the first client to initialize the earliest state associated with that ``session ID``.
+4. ``Unsubscribe``: This message type notifies the server to stop sending updates to the client associated with the session included in the subsubscribe message. 
 
 #### Initializing the hooks with useSyncState
 
@@ -75,13 +76,21 @@ The version of React should be passed into useSyncState in order to avoid versio
 
 #### The SyncHandler Class
 
-A SyncHandler object should be instantiated with the database URI in which the state is tracked. Currently MongoDB is supported.
+A SyncHandler object should be instantiated with the database driver in which the state is to be tracked. If no database driver is specified, the default database driver will use JSON to track state.
 
-``const syncHandler = new SyncHandler(`myURI`)``
+Currently MongoDB and PostgresSQL are supported by pre-designed drivers. The TypeScript interface ``driver.ts`` provides the specifications for other drivers to implement.
+
+Example 1: Instantiating the SyncHandler with MongoDB as the database storing state.
+
+``const syncHandler = new SyncHandler(new MongoDriver(`myURI`));``
+
+Example 2: Instantiating the SyncHandler with a JSON database.
+
+``const syncHandler = new SyncHandler();``
 
 #### Connecting to the database
 
-``syncHandler.connect()`` should be used to initialize the asynchronous database connection. This method can be invoked with an optional parameter of a new URI to change the database in which the server tracks state. (e.g. ``syncHandler.connect('myNewURI')``)
+The SyncHandler does not automatically connect to the database driver provided on its invocation.``syncHandler.connect()`` should be used to initialize the asynchronous database connection. If the connected database driver is changed, ``syncHandler.connect()`` should be called again.
 
 #### Attaching the SyncHandler to the Websocket Server such as ws
 
@@ -89,12 +98,60 @@ Finally, the SyncHandler object should be invoked during connection events for t
 
 Below is the sample implementation for the [ws](https://www.npmjs.com/package/ws) library.
 
-``const wsServer = new ws.Server({ noServer: true });``
-``wsServer.on("connection", syncHandler.handleWsConnection);``
+```
+const syncHandler = new SyncHandler();
+const wsServer = new ws.Server({ noServer: true });
+wsServer.on("connection", syncHandler.handleWsConnection);
+```
+
+#### Auto-Disconnect
+
+By default, the SyncHandler automatically disconnects websockets that reach the close state while connected. This behavior can be changed by invoking the ``toggleAutoDisconnect()`` method.
+
+#### State Merger
+
+By default, the database preserves only the most recently received state. This behavior can be customized using the StateMerger class.
+
+The properties of the merger can be accessed by calling ``.merger`` on the SyncHandler.
+
+1. ``setDefaultHandler`` can be used to set custom behavior for conflicting states, for example by diffing or calculating which state to keep. 
+
+```
+const syncHandler = new SyncHandler();
+syncHandler.merger.setDefaultHandler((serverState, oldState, newState) => Math.max( serverState + oldState, serverState + newState));
+```
+
+2. ``registerHandler`` can be used to set custom behavior for conflicting states, but only for specific sessions, if the conflict management behavior is only desired in specific cases. 
+
+```
+const syncHandler = new SyncHandler();
+syncHandler.merger.registerHandler( '0', (serverState, oldState, newState) => Math.max( serverState + oldState, serverState + newState) );
+```
+
+#### Pre-processing State Changes
+
+The SyncHandler can preprocess inputs received from clients for validity or encryption purposes.
+
+A function can be set for this purpose by invoking ``setProcessState()``, which takes as a parameter the helper function containing the logic to process the state.
+
+This helper function should take one parameter representing an object containing keys of ``state``, ``session``, and ``action`` type, as well as the ``oldState`` if applicable, and return the processed object containing those same keys.
+
+```
+const syncHandler = new SyncHandler();
+syncHandler.setProcessState( (stateUpdate) => {console.log(stateUpdate.session), return stateUpdate} );
+```
+
+The helper function set using ``setProcessState()`` can be cleared by invoking ``resetProcessState()``.
+
+```
+syncHandler.resetProcessState();
+```
 
 ## Demo Apps
 
-- Echo Server
+##### Echo Server
+
+A chat application with four separate channels for conversation. Clients are synchronized to the server via websockets, which transmit updates relating to any messages sent or background changes.
 
 ## Contributing
 

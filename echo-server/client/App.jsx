@@ -8,7 +8,6 @@ let clipCount = 1;
 
 const conn = new Connection('ws://localhost:3000');
 const App = () => {
-  // console.log('attempting to render app');
   const [session, setSession] = useState('0');
 
   const [socketState, setSocketState, undoSocketState] = useSyncState(
@@ -29,13 +28,11 @@ const App = () => {
   body.className = backgroundClass;
 
   function sendWebSocketMessage() {
-    console.log('We are in the send update websocket message function');
     const newMessage = {
       timestamp: new Date().toUTCString(),
       message,
       user: document.getElementById('username').value,
     };
-    console.log('Synced hook is transmitting message: '+newMessage);
     setSocketState([...socketState, newMessage]);
   }
 
@@ -94,10 +91,10 @@ const App = () => {
         <button onClick={sendWebSocketMessage}>Send</button>
         <button onClick={undoSocketState}>Undo</button>
         <br></br>
-        <button onClick={() => {console.log('Hook is setting background to gradient');setBackgroundClass('background-gradient')}}>Gradient</button>
-        <button onClick={() => {console.log('Hook is setting background to delight');setBackgroundClass('background-delight')}}>Delight</button>
+        <button onClick={() => {console.log('Setting background to gradient');setBackgroundClass('background-gradient')}}>Gradient</button>
+        <button onClick={() => {console.log('Setting background to delight');setBackgroundClass('background-delight')}}>Delight</button>
         <button onClick={() => {
-          console.log('Hook is setting background to rocketleague');
+          console.log('Setting background to rocketleague');
           setBackgroundClass(`background-rocketLeague${clipCount}`);
           clipCount = clipCount % 5 + 1;
         }}>Rocket League</button>
