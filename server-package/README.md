@@ -14,6 +14,8 @@
 
 - [Installation](#installation)
 
+- [How It works](#how-it-works)
+
 - [Demo Apps](#demo-apps)
 
 - [Contributing](#contributing)
@@ -27,6 +29,8 @@ A lightweight non-opinionated NPM library that works along side socket-league-cl
 ## Installation
 
 ``npm install socket-league-server`` for access to the websocket server handler.
+
+## How It works
 
 ### The synchronized hook server handler
 
@@ -111,6 +115,11 @@ The helper function set using ``setProcessState()`` can be cleared by invoking `
 ```
 syncHandler.resetProcessState();
 ```
+
+#### Server Setup
+
+Now that your backend is setup it is time to setup your frontend. Please refer to the following NPM library for more information on how to set that up: [socket-league-client](https://www.npmjs.com/package/socket-league-client).
+
 
 ## Demo Apps
 
