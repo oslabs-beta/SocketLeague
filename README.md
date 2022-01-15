@@ -2,10 +2,11 @@
   <img src="https://github.com/oslabs-beta/SocketLeague/blob/5bd79f9556de084e33323787a46da8e9c2442288/assets/images/Socket_League_Logo_.gif" alt="Socket League Logo"/>
 </p>
 
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/oslabs-beta/SocketLeague/pulls)
+![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
+![GitHub package.json version](https://img.shields.io/github/package-json/v/oslabs-beta/SocketLeague?color=blue)
 
 # SocketLeague: Websockets that transfer synced state
-
-
 
 ## Table of Contents
 
@@ -34,8 +35,6 @@ A lightweight non-opinionated NPM library that offers a custom React hook that u
 
 ### The Custom React Hook
 
-![The Custom React Hook](https://github.com/oslabs-beta/SocketLeague/blob/05ac3593c981402dc4adc8cdccccbd7dc225d56a/assets/images/Socket-League-Frontend-Hook.png)
-
 Let's break down the components of the call to explain each part of the hook invocation.
 
 #### The Connection Class
@@ -59,11 +58,15 @@ The ``Connection`` class sends three message types to the server: ``Initial``, `
 
 #### Initializing the hooks with useSyncState
 
-Finally, to add the custom hook to the application, simply invoke ``useSyncState`` with the desired ``session ID``, the desired initial state, a new invocation of ``Connection``, and the local version of React.
+Finally, to add the custom hook to the application, simply invoke ``useSyncState`` with the desired ``session ID``, the desired initial state, a ``Connection`` object, and the local version of React.
 
 The version of React should be passed into useSyncState in order to avoid versioning and dependency issues.
 
 ```
+  //outside the React component's render or return method
+  const conn = new Connection ('ws://localhost:3000');
+
+  //within the React component's render or return method
   const [socketState, setSocketState, undoSocketState] = useSyncState(
     session,
     initialState,
@@ -80,13 +83,16 @@ A SyncHandler object should be instantiated with the database driver in which th
 
 Currently MongoDB and PostgresSQL are supported by pre-designed drivers. The TypeScript interface ``driver.ts`` provides the specifications for other drivers to implement.
 
-Example 1: Instantiating the SyncHandler with MongoDB as the database storing state.
+Example 1: Instantiating the SyncHandler with MongoDB or Postgres as the database storing state.
 
 ``const syncHandler = new SyncHandler(new MongoDriver(`myURI`));``
+``const syncHandler = new SyncHandler(new PostgresDriver(`myURI`));``
 
 Example 2: Instantiating the SyncHandler with a JSON database.
 
 ``const syncHandler = new SyncHandler();``
+is equivalent to
+``const syncHandler = new SyncHandler(new JsonDriver());``
 
 #### Connecting to the database
 
@@ -100,6 +106,7 @@ Below is the sample implementation for the [ws](https://www.npmjs.com/package/ws
 
 ```
 const syncHandler = new SyncHandler();
+await syncHandler.connect();
 const wsServer = new ws.Server({ noServer: true });
 wsServer.on("connection", syncHandler.handleWsConnection);
 ```
@@ -107,6 +114,11 @@ wsServer.on("connection", syncHandler.handleWsConnection);
 #### Auto-Disconnect
 
 By default, the SyncHandler automatically disconnects websockets that reach the close state while connected. This behavior can be changed by invoking the ``toggleAutoDisconnect()`` method.
+
+```
+const syncHandler = new SyncHandler();
+console.log(syncHandler.toggleAutoDisconnect()); //returns and logs the current AutoDisconnect status.
+```
 
 #### State Merger
 
@@ -151,11 +163,13 @@ syncHandler.resetProcessState();
 
 ##### Echo Server
 
-A chat application with four separate channels for conversation. Clients are synchronized to the server via websockets, which transmit updates relating to any messages sent or background changes.
+[Check out our chat-app we built using our very own NPM libraries and hooks!](https://github.com/oslabs-beta/SocketLeague/tree/dev/echo-server-electron) 
+
+Our Echo Server is a chat application with four separate channels for conversation. Clients are synchronized to the server via websockets, which transmit updates relating to any messages sent or background changes. Feel free to cruise around and see how exactly it all comes together.
 
 ## Contributing
 
-We'd love for you to test this library out and submit any issues you encounter.
+We'd love for you to test this library out and submit any issues you encounter. Also feel free to fork to your own repo and submit pull requests!
 
 ## Authors
 
