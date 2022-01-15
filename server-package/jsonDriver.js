@@ -1,6 +1,6 @@
 class JsonDriver {
 
-    construcutor() {
+    constructor() {
        this.db = {};
        
     }
