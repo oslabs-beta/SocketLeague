@@ -1,3 +1,4 @@
+import React from 'react';
 import ReconnectingWebSocket from 'reconnecting-websocket'
 
 /**
@@ -158,7 +159,7 @@ export class Connection {
  * @param {*} react This is to specify which react to use
  * @returns The state, the setsyncstate function and the undo function
  */
-export const useSyncState = (session, initialState, conn, react) => {
+export const useSyncState = (session, initialState, conn, react=React) => {
   const [state, setState] = react.useState(initialState);
   const handleMessage = (message) => {
     setState(message);
