@@ -10,7 +10,6 @@ const types = {
   INITIAL: 'initial',
   UNSUBSCRIBE: 'unsubscribe',
   UNDO: 'undo',
-  REDO: 'redo',
 };
 
 /**
