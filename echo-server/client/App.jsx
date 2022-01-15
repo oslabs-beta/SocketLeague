@@ -14,14 +14,12 @@ const App = () => {
     session,
     initialState,
     conn,
-    React
   );
 
   const [backgroundClass, setBackgroundClass] = useSyncState(
     'background',
     'background-gradient',
     conn,
-    React,
   );
 
   const body = document.querySelector('body');
