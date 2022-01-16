@@ -26,13 +26,12 @@ const App = () => {
   body.className = backgroundClass;
 
   function sendWebSocketMessage() {
-    console.log('We are in the send update websocket message function');
+  
     const newMessage = {
       timestamp: new Date().toUTCString(),
       message,
       user: document.getElementById('username').value,
     };
-    console.log('Synced hook is transmitting message: '+newMessage);
     setSocketState([...socketState, newMessage]);
   }
 
@@ -80,7 +79,7 @@ const App = () => {
         <table>{textMsg}</table>
       </div>
       <br></br>
-      <div className="userInputs">
+      <div className="userInputs" id="footer">
         <input id="username" placeholder="Username"></input>
         <input
           className="textInput"
