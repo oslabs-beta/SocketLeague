@@ -1,14 +1,11 @@
 class JsonDriver {
-
     constructor() {
        this.db = {};
-       
+
     }
 
-    async connect() {
-       
-    }
-    
+    async connect() {}
+
     async getLatestSessionRecord(session) {
       const records = this.db[session]
       if (records && records.length > 0) {
@@ -32,7 +29,7 @@ class JsonDriver {
       if (this.db[session].length > 1) {
         this.db[session].pop();
       }
-               
+
     }
 
 
@@ -40,9 +37,7 @@ class JsonDriver {
       this.db = {};
     }
 
-    async close() { 
-
-    }
+    async close() {}
 }
 
 module.exports = JsonDriver;

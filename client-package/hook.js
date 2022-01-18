@@ -43,8 +43,8 @@ export class Connection {
       callback(state);
     });
 
-    /** 
-     * This is called on initial connection to the server and on reconnecting using ReconnectingWebSocket 
+    /**
+     * This is called on initial connection to the server and on reconnecting using ReconnectingWebSocket
     */
     this.socket.onopen = () => {
       if (this._canResubscribe) this.resubscribe();
@@ -60,9 +60,9 @@ export class Connection {
 
   /**
    * @property {Function} subscribe
-   * @param {*} session This is the session id that clients subscribe to
-   * @param {*} onMessage placeholder text description
-   * @param {*} initialState This is the initial state that the client is given when they subscribe to a session
+   * @param {*} session The session that the client is subscribing to
+   * @param {*} onMessage A callback that will be invoked when a message arrives for the session
+   * @param {*} initialState The default initial state; only used when creating a new session
    */
   subscribe(session, onMessage, initialState) {
     if (this.subscriptions.has(session)) {
@@ -78,7 +78,7 @@ export class Connection {
 
   /**
    * @property {Function} unsubscribe
-   * @param {*} session This is the session id that clients subscribe to
+   * @param {*} session The session that the client is unsubscribing from
    */
   unsubscribe(session) {
     if (!this.subscriptions.has(session)) {
@@ -93,9 +93,8 @@ export class Connection {
   }
 
   /**
-   * @property {Function} resubscribe 
+   * @property {Function} resubscribe
    * This method is called to try to reestablish any stored sessions in the client upon connection to the server
-   * 
    */
 
   resubscribe() {
@@ -111,7 +110,7 @@ export class Connection {
 
   /**
    * @property {Function} sendUndo
-   * @param {*} session This is the session id that clients are subscribed to
+   * @param {*} session The session from which the client will undo a state change
    */
   sendUndo(session) {
     const action = types.UNDO;
@@ -153,7 +152,7 @@ export class Connection {
 
 /**
  * Custom React hook that will be called on the client
- * @param {*} session This is the session id that the client is subscribed to
+ * @param {*} session This is the session id that the hook is subscribed to
  * @param {*} initialState This is the initialState that the hook initializes
  * @param {*} conn This is the connection to the web socket
  * @param {*} react This is to specify which react to use
