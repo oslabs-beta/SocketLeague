@@ -11,6 +11,7 @@ class MongoDriver {
   constructor(uri) {
     this.dbUri = uri;
   }
+
   async connect() {
     await mongoose.connect(this.dbUri, {
       useNewUrlParser: true,

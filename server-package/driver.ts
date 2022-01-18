@@ -4,8 +4,6 @@ const db = require('./models/clientModel.js');
  * @interface Driver
  */
 interface Driver {
-  //functions go below
-
   /**
    * @function connect
    */

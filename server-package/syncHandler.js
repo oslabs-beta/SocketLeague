@@ -21,7 +21,7 @@ const types = {
  */
 class SyncHandler {
   /**
-   * @param db
+   * @param db A database driver instance
    */
   constructor(db) {
     this.sessions = {};
@@ -193,13 +193,6 @@ class SyncHandler {
         console.log('Error in unsubscribe', err);
       }
     }
-  }
-
-  /**
-   * @property {function} __getDB getDB is a method to return the entire DB ()
-   */
-  __getDB() {
-    return this.db;
   }
 
   /**
