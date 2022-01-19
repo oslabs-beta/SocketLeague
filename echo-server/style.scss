@@ -1,0 +1,257 @@
+@import url('https://fonts.googleapis.com/css2?family=Bangers&family=Montserrat+Alternates:wght@600&display=swap');
+@import url(https://fonts.googleapis.com/css?family=Righteous);
+
+body {
+  display: flex;
+  flex-direction: column;
+  justify-content: top;
+  align-items: center;
+  font-size: 20px;
+  text-align: center;
+  overflow: hidden;
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+}
+
+#root {
+  z-index: 1;
+}
+
+.background-gradient {
+  background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+  background-size: 400% 400%;
+  animation: gradient 30s ease infinite;
+  height: 100vh;
+}
+
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+
+
+
+// delight start
+@mixin dots($count) {
+  $text-shadow: ();
+  @for $i from 0 through $count {
+    $text-shadow: $text-shadow,
+                 ((random() - .5) * 3) + em
+                 ((random() - .5) * 3) + em
+                 4px
+                 hsla(random() * 360, 100%, 50%,.9);
+  }
+  text-shadow: $text-shadow;
+}
+
+.background-delight {
+  // display: block;
+  color: transparent;
+  overflow: hidden;
+  background: #123;
+  //z-index: -1;
+}
+
+.background-delight::before, .background-delight::after {
+  font: 5vmin/1.3 Serif;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 3em;
+  height: 3em;
+  content: '☺';
+  mix-blend-mode: screen;
+  animation: 44s -27s move infinite ease-in-out alternate;
+}
+
+
+.background-delight::before {
+  @include dots(40);
+  animation-duration: 44s;
+  animation-delay: -27s;
+}
+
+.background-delight::after {
+  @include dots(40);
+  animation-duration: 43s;
+  animation-delay: -32s;
+}
+
+.background-delight::before {
+  // content: 'DeLight\A A CSS DEMO';
+  //letter-spacing: .5em;
+  text-shadow: 0 0 5px #000;
+  //white-space: pre;
+  // color: #fff;
+  color: rgba(255, 255, 255, 0);
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  text-align: center;
+  color: rgba(153, 153, 153, 0);
+  // color: #999;
+}
+
+.background-delight:first-line {
+  font-size: 300%;
+  font-style: italic;
+  letter-spacing: 0;
+  color: #fff;
+}
+
+@keyframes move {
+  from {
+    transform: rotate(0deg) scale(12) translateX(-20px);
+  }
+  to {
+    transform: rotate(360deg) scale(18) translateX(20px);
+  }
+}
+// delight end
+
+
+// rocketLeague start
+.background-rocketLeague1 {
+  background-image: url("./assets/clip1.gif");
+  background-size: 50%;
+}
+.background-rocketLeague2 {
+  background-image: url("./assets/clip2.gif");
+  background-size: 50%;
+}
+.background-rocketLeague3 {
+  background-image: url("./assets/clip3.gif");
+  background-size: 50%;
+}
+.background-rocketLeague4 {
+  background-image: url("./assets/clip4.gif");
+  background-size: 50%;
+}
+.background-rocketLeague5 {
+  background-image: url("./assets/clip5.gif");
+  background-size: 50%;
+}
+
+
+
+
+div.main-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: top;
+  align-items: center;
+}
+
+div.displayBox {
+  display: flex;
+  flex-direction: column-reverse;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  overscroll-behavior: contain;
+  scroll-snap-align: end;
+  width: 600px;
+  height: 600px;
+  background: white;
+  border-style: solid;
+  border-radius: 3%;
+  border-width: 2px;
+  border-color: black;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+}
+
+div.root {
+  border-style: solid;
+  border-radius: 3%;
+  border-width: 2px;
+  border-color: black;
+}
+
+#username {
+  font-size: 15px;
+}
+
+#echoText {
+  font-size: 15px;
+}
+
+div.message-box-self {
+  background-color: dodgerblue;
+  width: auto;
+  word-break: break-word;
+  margin-left: 150px;
+  border-radius: 10px;
+  box-shadow: 10px 5px 5px grey;
+}
+
+h1 {
+  display: inline-block;
+  color: white;
+  font-family: 'Righteous', serif;
+  font-size: 65px; 
+  text-shadow: 10px 5px 5px rgb(0, 0, 0);
+  }
+ 
+p {
+  font-family: 'Montserrat Alternates', sans-serif;
+}
+
+p.message-self {
+  font-size: 20px;
+  color: aliceblue;
+  text-align: left;
+  padding-left: 8px;
+  padding-top: 8px;
+  margin: 10px;
+}
+
+p.timestamp-user-self {
+  font-size: 12px;
+  color: aliceblue;
+  text-align: right;
+  padding-right: 10px;
+  padding-bottom: 3px;
+  margin: 10px;
+}
+
+div.message-box-other {
+  background-color: darkgrey;
+  width: auto;
+  word-break: break-word;
+  margin-right: 150px;
+  border-radius: 15px;
+  box-shadow: 10px 5px 5px grey;
+}
+p.message-other {
+  font-size: 20px;
+  color: aliceblue;
+  text-align: left;
+  padding-left: 8px;
+  padding-top: 8px;
+  margin: 10px;
+}
+
+p.timestamp-user-other {
+  font-size: 12px;
+  color: aliceblue;
+  text-align: right;
+  padding-right: 10px;
+  padding-bottom: 3px;
+  margin: 10px;
+}
+
+button {
+  box-shadow: 3px 3px 15px rgb(0, 0, 0);
+}
+
+input {
+  box-shadow: 3px 3px 15px rgb(0, 0, 0);
+}

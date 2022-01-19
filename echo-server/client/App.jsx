@@ -1,0 +1,104 @@
+import React, { useState } from 'react';
+import { useSyncState, Connection } from 'socket-league-client';
+import '../style.scss';
+
+let message = 'hello, I clicked a button!';
+const initialState = '';
+let clipCount = 1;
+
+const conn = new Connection('ws://localhost:3000');
+const App = () => {
+  const [session, setSession] = useState('0');
+
+  const [socketState, setSocketState, undoSocketState] = useSyncState(
+    session,
+    initialState,
+    conn,
+  );
+
+  const [backgroundClass, setBackgroundClass] = useSyncState(
+    'background',
+    'background-gradient',
+    conn,
+  );
+
+  const body = document.querySelector('body');
+  body.className = backgroundClass;
+
+  function sendWebSocketMessage() {
+    const newMessage = {
+      timestamp: new Date().toUTCString(),
+      message,
+      user: document.getElementById('username').value,
+    };
+    setSocketState([...socketState, newMessage]);
+  }
+
+  const textMsg = [];
+  for (let i = 0; i < socketState.length; i++) {
+    const timeString = new Date(socketState[i].timestamp).toLocaleString();
+    if (socketState[i].user === document.getElementById('username').value) {
+      textMsg.push(
+        <tr>
+          <div className="message-box-self">
+            <p className="message-self">{socketState[i].message}</p>
+            <p className="timestamp-user-self">
+              {timeString} ~ {socketState[i].user}
+            </p>
+          </div>
+        </tr>
+      );
+    } else {
+      textMsg.push(
+        <tr>
+          <div className="message-box-other">
+            <p className="message-other">{socketState[i].message}</p>
+            <p className="timestamp-user-other">
+              {timeString} ~ {socketState[i].user}
+            </p>
+          </div>
+        </tr>
+      );
+    }
+  }
+
+  return (
+    <div className="main-container">
+      <div className="title">
+        <h1>Socket League Demo (Chat Rooms)</h1>
+      </div>
+      <div className="sessionBtns">
+        <button onClick={() => setSession('0')}>Chat Room 1</button>
+        <button onClick={() => setSession('1')}>Chat Room 2</button>
+        <button onClick={() => setSession('2')}>Chat Room 3</button>
+        <button onClick={() => setSession('3')}>Chat Room 4</button>
+      </div>
+      <br></br>
+      <div className="displayBox">
+        <table>{textMsg}</table>
+      </div>
+      <br></br>
+      <div className="userInputs">
+        <input id="username" placeholder="Username"></input>
+        <input
+          className="textInput"
+          id="echoText"
+          placeholder="what would you have me say?"
+          onChange={(e) => (message = e.target.value)}
+        ></input>
+        <button onClick={sendWebSocketMessage}>Send</button>
+        <button onClick={undoSocketState}>Undo</button>
+        <br></br>
+        <button onClick={() => {console.log('Setting background to gradient');setBackgroundClass('background-gradient')}}>Gradient</button>
+        <button onClick={() => {console.log('Setting background to delight');setBackgroundClass('background-delight')}}>Delight</button>
+        <button onClick={() => {
+          console.log('Setting background to rocketleague');
+          setBackgroundClass(`background-rocketLeague${clipCount}`);
+          clipCount = clipCount % 5 + 1;
+        }}>Rocket League</button>
+      </div>
+    </div>
+  );
+};
+
+export default App;

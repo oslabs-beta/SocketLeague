@@ -1,0 +1,27 @@
+name: Node.js CI
+
+on:
+  pull_request:
+    branches: [ main, dev ]
+
+jobs:
+  test:
+    environment: testing
+    env:
+      DB_URI: ${{ secrets.DB_URI }}
+      DB_MONGO: ${{ secrets.DB_MONGO }}
+      DB_POSTGRES: ${{ secrets.DB_POSTGRES }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16.x]
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v2
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    - run: '(cd server-package && npm ci && npm test)'
+    - run: '(cd client-package && npm ci && npm test)'
+    - run: '(cd integrated-tests && npm ci && npm run build && npm test)'

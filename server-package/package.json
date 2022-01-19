@@ -1,0 +1,47 @@
+{
+  "name": "socket-league-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest",
+    "doc": "jsdoc -c jsdoc.json"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "contributors": [
+    {
+      "name": "Aaron Gaut",
+      "url": "https://github.com/AaronJGaut"
+    },
+    {
+      "name": "Kurt Crandall",
+      "url": "https://github.com/KCrandall6"
+    },
+    {
+      "name": "Kyle Boudewyn",
+      "url": "https://github.com/KyleBoudewyn"
+    },
+    {
+      "name": "Trevor Mow",
+      "url": "https://github.com/tmow12"
+    },
+    {
+      "name": "Zachary Lim",
+      "url": "https://github.com/Lzzhengyi"
+    }
+  ],
+  "devDependencies": {
+    "jest": "^27.4.5",
+    "jest-websocket-mock": "^2.2.1",
+    "jsdoc": "^3.6.7",
+    "mock-socket": "^9.0.8"
+  },
+  "dependencies": {
+    "dotenv": "^10.0.0",
+    "mongoose": "^6.1.4",
+    "pg": "^8.7.1",
+    "ws": "^8.4.0"
+  }
+}
