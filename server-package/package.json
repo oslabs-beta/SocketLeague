@@ -1,13 +1,18 @@
 {
   "name": "socket-league-server",
-  "version": "1.0.0",
-  "description": "",
+  "version": "1.0.1",
+  "description": "A lightweight non-opinionated NPM library that works along side socket-league-client. This library contains a handler to receive messages from the hook on a websocket server which persists the state updates on a database and notifies clients of changes. Both socket-league-server and socket-league-client should be used together.",
   "main": "index.js",
   "scripts": {
     "test": "jest",
     "doc": "jsdoc -c jsdoc.json"
   },
-  "keywords": [],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/oslabs-beta/SocketLeague.git"
+  },
+  "homepage": "https://www.socketleague.org/",
+  "keywords": ["WebSocket", "WebSockets", "real-time", "server", "reconnecting", "reconnection", "reconnect", "synchronized", "React", "hook", "transmit", "properties", "state"],
   "author": "",
   "license": "MIT",
   "contributors": [
