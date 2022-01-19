@@ -4,7 +4,7 @@
 
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/oslabs-beta/SocketLeague/pulls)
 ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
-![GitHub package.json version](https://img.shields.io/github/package-json/v/oslabs-beta/SocketLeague?color=blue)
+![GitHub package.json version](https://img.shields.io/github/package-json/v/oslabs-beta/SocketLeague/main/client-package?color=yellow)
 
 # socket-league-client: Websockets that transfer synced state
 

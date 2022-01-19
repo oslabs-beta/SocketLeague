@@ -1,13 +1,18 @@
 {
   "name": "socket-league-client",
-  "version": "1.0.0",
-  "description": "",
+  "version": "1.0.1",
+  "description": "A lightweight non-opinionated NPM library that offers a custom React hook that utilizes websockets to synchronize state between multiple clients and can evolve state dynamically, coupled with a server side NPM library socket-league-server which contains a handler to receive messages from the hook on a websocket server to persist state updates on a database and notifies clients of changes.",
   "main": "index.js",
   "scripts": {
     "test": "node --experimental-vm-modules ./node_modules/.bin/jest",
     "doc": "jsdoc -c jsdoc.json"
   },
-  "keywords": [],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/oslabs-beta/SocketLeague.git"
+  },
+  "homepage": "https://www.socketleague.org/",
+  "keywords": ["WebSocket", "WebSockets", "real-time", "client", "reconnecting", "reconnection", "reconnect", "synchronized", "React", "hook", "transmit", "properties", "state"],
   "author": "",
   "license": "MIT",
   "type": "module",
