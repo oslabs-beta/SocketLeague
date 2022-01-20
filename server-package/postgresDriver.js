@@ -1,8 +1,12 @@
+/**
+ * @file postgresDriver.js handles all postgresDB functionality
+ */
+
 const pg = require('pg');
 const db = require('./models/clientModelPostgres.js');
 
 /**
- * @class PostgresDriver
+ * @class PostgresDriver handles all functionality related to connecting to a Postgres Database
  */
 class PostgresDriver {
   /**
@@ -11,14 +15,18 @@ class PostgresDriver {
   constructor(uri) {
     this.dbUri = uri;
   }
+
+  /**
+   * Establishes a connection to the database
+   */
   async connect() {
     await db.connect(this.dbUri);
-    //await new pg.Client(this.dbUri);
   }
 
   /**
-   * @function getLatestSessionRecord
-   * @params session is the session ID which will be searched in the database, which will find the most recent instance thereof
+   * Queries the database for the most recent session record
+   * @param {String} session The session ID which will be searched in the database
+   * @return {Object} An object containing the session ID and the new state or Null
    */
   async getLatestSessionRecord(session) {
     const text = `SELECT * FROM client WHERE session=$1 ORDER BY _id DESC LIMIT 1;`;
@@ -32,9 +40,10 @@ class PostgresDriver {
   }
 
   /**
-   * @function createSessionRecord
-   * @param session
-   * @param state
+   * Creates a new session record in the database
+   * @param {String} session The session ID which will be searched in the database
+   * @param {Object} state the state object that was provided by the client
+   * @return {Object} An object containing the session ID and the new state
    */
   async createSessionRecord(session, state) {
     const text = `INSERT INTO client (session, state) VALUES($1, $2);`;
@@ -44,8 +53,8 @@ class PostgresDriver {
   }
 
   /**
-   * @function deleteLatestSessionRecord
-   * @param session
+   * Removes the most recent state change in the database
+   * @param {String} session The session ID which will be searched in the database
    */
   async deleteLatestSessionRecord(session) {
     const text = `SELECT * FROM client WHERE session=$1;`;
@@ -60,7 +69,7 @@ class PostgresDriver {
   }
 
   /**
-   * @function clearAllStates
+   * Clear all records from the postgreSQL DB
    */
   async clearAllStates() {
     const text = `DELETE FROM client`;
@@ -68,14 +77,15 @@ class PostgresDriver {
   }
 
   /**
-   * @function close
+   * Close the connection to the DB
    */
   async close() {
     await db.close();
   }
 
   /**
-   * @property {function} __getDB getDB is a method to return the entire DB ()
+   * Returns the entire DB. Used for testing
+   * @return {Object} returns the stored database wrapped by the Driver
    */
   __getDB() {
     return db;

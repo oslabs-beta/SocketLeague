@@ -4,8 +4,8 @@
 
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/oslabs-beta/SocketLeague/pulls)
 ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
-![GitHub package.json version](https://img.shields.io/github/package-json/v/oslabs-beta/SocketLeague/dev/client-package?color=yellow)
-![GitHub package.json version](https://img.shields.io/github/package-json/v/oslabs-beta/SocketLeague/dev/server-package?color=steelblue)
+![GitHub package.json version](https://img.shields.io/github/package-json/v/oslabs-beta/SocketLeague/main/client-package?color=yellow)
+![GitHub package.json version](https://img.shields.io/github/package-json/v/oslabs-beta/SocketLeague/main/server-package?color=steelblue)
 
 # SocketLeague: Websockets that transfer synced state
 
@@ -175,9 +175,10 @@ We'd love for you to test this library out and submit any issues you encounter. 
 ## Authors
 
 ```
-Kyle Boudewyn
-Kurt Crandall
-Aaron Gaut
-Zachary Lim
-Trevor Mow
+[Aaron Gaut](https://github.com/AaronJGaut)
+[Kyle Boudewyn](https://github.com/KyleBoudewyn)
+[Kurt Crandall](https://github.com/KCrandall6)
+[Trevor Mow](https://github.com/tmow12)
+[Zachary Lim](https://github.com/lzzhengyi)
+
 ```
