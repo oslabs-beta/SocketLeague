@@ -175,9 +175,9 @@ We'd love for you to test this library out and submit any issues you encounter. 
 ## Authors
 
 ```
-Kyle Boudewyn
-Kurt Crandall
-Aaron Gaut
-Zachary Lim
-Trevor Mow
+Kyle Boudewyn - [KyleBoudewyn](https://github.com/KyleBoudewyn)
+Kurt Crandall - [KCrandall6](https://github.com/KCrandall6)
+Aaron Gaut - [AaronJGaut](https://github.com/AaronJGaut)
+Zachary Lim - [lzzhengyi](https://github.com/lzzhengyi)
+Trevor Mow - [tmow12](https://github.com/tmow12)
 ```
