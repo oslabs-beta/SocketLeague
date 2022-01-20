@@ -174,11 +174,10 @@ We'd love for you to test this library out and submit any issues you encounter. 
 
 ## Authors
 
-```
 [Aaron Gaut](https://github.com/AaronJGaut)
 [Kyle Boudewyn](https://github.com/KyleBoudewyn)
 [Kurt Crandall](https://github.com/KCrandall6)
 [Trevor Mow](https://github.com/tmow12)
 [Zachary Lim](https://github.com/lzzhengyi)
 
-```
+
