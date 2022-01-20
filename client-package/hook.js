@@ -1,5 +1,5 @@
 import React from 'react';
-import ReconnectingWebSocket from 'reconnecting-websocket'
+import ReconnectingWebSocket from 'reconnecting-websocket';
 
 /**
  * @file This file contains the connection class and the useSyncState function.
@@ -45,7 +45,7 @@ export class Connection {
 
     /**
      * This is called on initial connection to the server and on reconnecting using ReconnectingWebSocket
-    */
+     */
     this.socket.onopen = () => {
       if (this._canResubscribe) this.resubscribe();
       for (const data of this.pendingMessageData) {
@@ -59,10 +59,10 @@ export class Connection {
   }
 
   /**
-   * @property {Function} subscribe
-   * @param {*} session The session that the client is subscribing to
-   * @param {*} onMessage A callback that will be invoked when a message arrives for the session
-   * @param {*} initialState The default initial state; only used when creating a new session
+   * Subscribe a client to state changes
+   * @param {String} session The session that the client is subscribing to
+   * @param {function} onMessage A callback that will be invoked when a message arrives for the session
+   * @param {Object} initialState The default initial state; only used when creating a new session
    */
   subscribe(session, onMessage, initialState) {
     if (this.subscriptions.has(session)) {
@@ -77,8 +77,8 @@ export class Connection {
   }
 
   /**
-   * @property {Function} unsubscribe
-   * @param {*} session The session that the client is unsubscribing from
+   * Unsubscribe a client to a state
+   * @param {String} session The session that the client is unsubscribing from
    */
   unsubscribe(session) {
     if (!this.subscriptions.has(session)) {
@@ -93,24 +93,21 @@ export class Connection {
   }
 
   /**
-   * @property {Function} resubscribe
    * This method is called to try to reestablish any stored sessions in the client upon connection to the server
    */
-
   resubscribe() {
-    if (this.subscriptions.size > 0){
+    if (this.subscriptions.size > 0) {
       this.subscriptions.forEach((hook, session) => {
         const action = types.INITIAL;
         const state = '';
         this._send({ action, state, session });
-      })
+      });
     }
-
   }
 
   /**
-   * @property {Function} sendUndo
-   * @param {*} session The session from which the client will undo a state change
+   * Requests the server undo the latest state change
+   * @param {String} session The session from which the client will undo a state change
    */
   sendUndo(session) {
     const action = types.UNDO;
@@ -118,10 +115,10 @@ export class Connection {
   }
 
   /**
-   * @property {Function} sendUpdate
-   * @param {*} session This is the session id
-   * @param {*} oldState This is the previous state from before the update
-   * @param {*} newState This is the new state that the client passes in
+   * Sends the updated state to the server
+   * @param {String} session This is the session id
+   * @param {Object} oldState This is the previous state from before the update
+   * @param {Object} newState This is the new state that the client passes in
    */
   sendUpdate(session, oldState, newState) {
     const action = types.UPDATE;
@@ -130,7 +127,7 @@ export class Connection {
   }
 
   /**
-   * @property {Function} _send
+   * Used internally to send a message to the server
    * @param {Object} message This is an object sent by the client that is being stringified and sent through the web socket
    */
   _send(message) {
@@ -141,8 +138,7 @@ export class Connection {
       this.pendingMessageData.push(data);
     }
   }
-    /**
-   * @property {Function} close
+  /**
    * Close the ReconnectingWebSocket
    */
   close() {
@@ -152,14 +148,18 @@ export class Connection {
 
 /**
  * Custom React hook that will be called on the client
- * @param {*} session This is the session id that the hook is subscribed to
- * @param {*} initialState This is the initialState that the hook initializes
- * @param {*} conn This is the connection to the web socket
- * @param {*} react This is to specify which react to use
- * @returns The state, the setsyncstate function and the undo function
+ * @param {String} session This is the session id that the hook is subscribed to
+ * @param {Object} initialState This is the initialState that the hook initializes
+ * @param {Connection} conn This is the connection to the web socket
+ * @param {React} react This is to optionally specify which react to use
+ * @returns The state, the state setter function and the state undo function
  */
-export const useSyncState = (session, initialState, conn, react=React) => {
+export function useSyncState(session, initialState, conn, react = React) {
   const [state, setState] = react.useState(initialState);
+  /**
+   * HadleMessage will set the state to message provided by the client
+   * @param {Object} message Updated state sent by the client
+   */
   const handleMessage = (message) => {
     setState(message);
   };
@@ -169,15 +169,22 @@ export const useSyncState = (session, initialState, conn, react=React) => {
     return () => conn.unsubscribe(session);
   }, [session]);
 
+  /**
+   * Sends state updates to the server
+   * @param {Object} newState new updated state provided by the client
+   */
   const setSyncState = (newState) => {
     const oldState = state;
     setState(newState);
     conn.sendUpdate(session, oldState, newState);
   };
 
+  /**
+   * Sends an undo action to the server
+   */
   const undo = () => {
     conn.sendUndo(session);
   };
 
   return [state, setSyncState, undo];
-};
+}

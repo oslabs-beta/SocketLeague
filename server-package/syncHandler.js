@@ -17,7 +17,7 @@ const types = {
 };
 
 /**
- * @class SyncHandler
+ * @class  The SyncHandler class manages the server-side state synchronization logic. The handler SyncHandler should be instantiated with a new instance of a database-specific driver that takes the URI as a parameter. 
  */
 class SyncHandler {
   /**
@@ -36,13 +36,17 @@ class SyncHandler {
   }
 
   /**
-   * @property {Function} connect Connect to the users provided URI
+   * @property {Function} connect Connect to the database specified in the driver used to instantiate the SyncHandler
    *
    */
   async connect() {
     await this.db.connect();
   }
 
+  /**
+   * @property {Function} toggleAutoDisconnect Either enable or disable the auto-reconnecting property of the server. Returns the new state of the toggle.
+   * @return {Boolean} the current value of toggleAutoDisconnect
+   */
   toggleAutoDisconnect() {
     this.autoDisconnectClients = !this.autoDisconnectClients;
     return this.autoDisconnectClients;
@@ -50,17 +54,22 @@ class SyncHandler {
 
   /**
    * @property {Function} processState helper function to validate state changes. Overwrite this method to change the behavior of handleState
-   * @param {*} stateChange This is a JSON stringify object containing the JSON parsed message
-   *
+   * @param {Object} stateChange This is a JSON stringify object containing the JSON parsed message
+   * @return the parsed state
    */
   _processState(stateChange) {
     return stateChange;
   }
-
+  /**
+   * @property {Function} setProcessState Used to set a function that takes in any states transmitted by clients, runs logic (e.g. sanitizing) and then returns the processed state.
+   * @param {Function} func The function that is run automatically on the state received from clients. It should take one parameter representing the state, and return the processed state
+   */
   setProcessState(func) {
     this._processState = func;
   }
-
+  /**
+   * @property {Function} resetProcessState Clears the function specified by setProcessState, therefore removing any preprocessing of the state when the server receives it from clients
+   */
   resetProcessState() {
     this._processState = (stateChange) => {
       return stateChange;
@@ -69,8 +78,8 @@ class SyncHandler {
 
   /**
    * @property {Function} handleState Primary function that handles all state changes includeing the initial state and any update/undo state changes
-   * @param {*} message This is a JSON stringify object containing action, state, and session
-   * @param {*} socket This is the web socket the function is connected to
+   * @param {Object} message This is a JSON stringify object containing action, state, and session
+   * @param {WebSocket} socket This is the web socket the function is connected to
    */
   async handleState(message, socket) {
 

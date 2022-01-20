@@ -1,8 +1,11 @@
+/**
+ * @file mongoDriver.js handles all mongoDB functionality
+ */
 const mongoose = require('mongoose');
 const db = require('./models/clientModel.js');
 
 /**
- * @class MongoDriver
+ * @class MongoDriver handles all functionality related to connecting to a Mongo Database
  */
 class MongoDriver {
   /**
@@ -12,6 +15,9 @@ class MongoDriver {
     this.dbUri = uri;
   }
 
+  /**
+   * Establish a connection to the DB
+   */
   async connect() {
     await mongoose.connect(this.dbUri, {
       useNewUrlParser: true,
@@ -20,8 +26,9 @@ class MongoDriver {
   }
 
   /**
-   * @function getLatestSessionRecord
-   * @params session is the session ID which will be searched in the database, which will find the most recent instance thereof
+   * Queries the DB for the latest record
+   * @param {String} session The session ID which will be searched in the database
+   * @return {Object} An object containing the session ID and the new state or Null
    */
   async getLatestSessionRecord(session) {
     const records = await db.find({ session });
@@ -33,9 +40,10 @@ class MongoDriver {
   }
 
   /**
-   * @function createSessionRecord
-   * @param session 
-   * @param state
+   * Creates a new DB record from the session
+   * @param {String} session The session ID which will be searched in the database
+   * @param {Object} state Object passed in by the client that will be sotred in the DB as the state
+   * @return {Object}) An object containing the session ID and the new state
    */
   async createSessionRecord(session, state) {
     ({ session, state } = await db.create({ session, state }));
@@ -43,8 +51,8 @@ class MongoDriver {
   }
 
   /**
-   * @function deleteLatestSessionRecord
-   * @param session
+   * Delete the last record from the DB
+   * @param {String} session
    */
   async deleteLatestSessionRecord(session) {
     const records = await db.find({ session });
@@ -55,7 +63,7 @@ class MongoDriver {
   }
 
   /**
-   * @function clearAllStates
+   * Clear the mongo DB collection
    */
   async clearAllStates() {
     const sessionRecords = await db.find();
@@ -65,14 +73,15 @@ class MongoDriver {
   }
 
   /**
-   * @function close
+   * close connection to mongoDB
    */
   async close() {
     await mongoose.connection.close();
   }
 
   /**
-   * @property {function} __getDB getDB is a method to return the entire DB ()
+   * getDB is a method to return the entire DB ()
+   * @return {Object}) returns the stored database wrapped by the Driver
    */
   __getDB() {
     return db;
